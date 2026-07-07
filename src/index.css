@@ -1,0 +1,263 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ACKO Design System - Euclid Circular B Font */
+@font-face {
+  font-family: 'Euclid Circular B';
+  src: url('https://pub-c050457d48794d5bb9ffc2b4649de2c1.r2.dev/Euclid%20Font/EuclidCircularB-Light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Euclid Circular B';
+  src: url('https://pub-c050457d48794d5bb9ffc2b4649de2c1.r2.dev/Euclid%20Font/EuclidCircularB-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Euclid Circular B';
+  src: url('https://pub-c050457d48794d5bb9ffc2b4649de2c1.r2.dev/Euclid%20Font/EuclidCircularB-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Euclid Circular B';
+  src: url('https://pub-c050457d48794d5bb9ffc2b4649de2c1.r2.dev/Euclid%20Font/EuclidCircularB-Semibold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Euclid Circular B';
+  src: url('https://pub-c050457d48794d5bb9ffc2b4649de2c1.r2.dev/Euclid%20Font/EuclidCircularB-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@layer base {
+  :root {
+    /* ACKO Semantic Tokens */
+    --background: 0 0% 96.5%;
+    --foreground: 0 0% 4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
+
+    --primary: 260 64% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 244 100% 96%;
+    --secondary-foreground: 260 64% 45%;
+
+    --muted: 0 0% 96.5%;
+    --muted-foreground: 0 0% 36%;
+
+    --accent: 244 100% 96%;
+    --accent-foreground: 260 64% 45%;
+
+    --destructive: 335 72% 47%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90.5%;
+    --input: 0 0% 69%;
+    --ring: 260 64% 45%;
+
+    --radius: 10px;
+
+    /* ACKO Purple Scale (HSL) */
+    --purple-800: 258 69% 16%;
+    --purple-700: 258 64% 27%;
+    --purple-600: 260 64% 45%;
+    --purple-500: 258 84% 69%;
+    --purple-400: 258 84% 78%;
+    --purple-300: 258 80% 87%;
+    --purple-200: 244 100% 96%;
+    --purple-100: 252 43% 98%;
+
+    /* ACKO Onyx Scale (HSL) */
+    --onyx-800: 0 0% 4%;
+    --onyx-700: 0 0% 7%;
+    --onyx-600: 0 0% 18%;
+    --onyx-500: 0 0% 36%;
+    --onyx-400: 0 0% 69%;
+    --onyx-300: 0 0% 90.5%;
+    --onyx-200: 0 0% 96.5%;
+    --onyx-100: 0 0% 100%;
+
+    /* ACKO Cerise Scale (HSL) */
+    --cerise-800: 338 82% 17%;
+    --cerise-700: 338 72% 34%;
+    --cerise-600: 335 72% 50%;
+    --cerise-500: 335 80% 65%;
+    --cerise-400: 335 88% 78%;
+    --cerise-300: 335 88% 89%;
+    --cerise-200: 335 82% 95%;
+    --cerise-100: 335 60% 98%;
+
+    /* ACKO Blue Scale (HSL) */
+    --blue-800: 197 100% 20%;
+    --blue-700: 197 100% 29%;
+    --blue-600: 197 100% 44%;
+    --blue-500: 194 78% 51%;
+    --blue-400: 197 100% 67%;
+    --blue-300: 194 96% 81%;
+    --blue-200: 194 100% 93%;
+    --blue-100: 194 100% 97%;
+
+    /* ACKO Green Scale (HSL) */
+    --green-800: 145 100% 14%;
+    --green-700: 136 61% 29%;
+    --green-600: 148 77% 34%;
+    --green-500: 115 41% 51%;
+    --green-400: 115 67% 69%;
+    --green-300: 118 78% 81%;
+    --green-200: 118 88% 91%;
+    --green-100: 115 100% 97%;
+    --green-50: 131 67% 95%;
+
+    /* ACKO Orange Scale (HSL) */
+    --orange-800: 29 100% 18%;
+    --orange-700: 30 91% 37%;
+    --orange-600: 33 100% 43%;
+    --orange-500: 35 90% 55%;
+    --orange-400: 35 100% 70%;
+    --orange-300: 35 100% 80%;
+    --orange-200: 38 100% 88%;
+    --orange-100: 40 100% 95%;
+
+    /* Semantic States */
+    --success: 115 41% 51%;
+    --success-foreground: 136 61% 29%;
+    --success-bg: 118 88% 91%;
+
+    --warning: 35 90% 55%;
+    --warning-foreground: 30 91% 37%;
+    --warning-bg: 38 100% 88%;
+
+    --info: 194 78% 51%;
+    --info-foreground: 197 100% 29%;
+    --info-bg: 194 100% 93%;
+
+    --error: 335 72% 50%;
+    --error-foreground: 338 72% 34%;
+    --error-bg: 335 82% 95%;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 18%;
+    --sidebar-primary: 260 64% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 244 100% 96%;
+    --sidebar-accent-foreground: 260 64% 45%;
+    --sidebar-border: 0 0% 90.5%;
+    --sidebar-ring: 260 64% 45%;
+
+    /* Z-Index Scale */
+    --z-dropdown: 100;
+    --z-sticky: 150;
+    --z-modal: 200;
+    --z-tooltip: 300;
+    --z-toast: 400;
+
+    /* Easing Curves */
+    --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+    --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+    --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
+    --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
+
+    /* Spacing Scale */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-20: 80px;
+    --space-24: 96px;
+  }
+
+  .dark {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 96.5%;
+
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 96.5%;
+
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 96.5%;
+
+    --primary: 258 84% 69%;
+    --primary-foreground: 258 69% 16%;
+
+    --secondary: 258 69% 16%;
+    --secondary-foreground: 258 84% 69%;
+
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 69%;
+
+    --accent: 258 69% 16%;
+    --accent-foreground: 258 84% 69%;
+
+    --destructive: 335 72% 47%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 258 84% 69%;
+
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 90.5%;
+    --sidebar-primary: 258 84% 69%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 18%;
+    --sidebar-accent-foreground: 0 0% 90.5%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 258 84% 69%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Euclid Circular B', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s var(--ease-out-cubic) both;
+}
+
+@keyframes dotBounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
