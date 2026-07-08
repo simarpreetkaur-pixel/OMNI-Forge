@@ -389,8 +389,9 @@ export default function SeoConfigPage({
 
         // Auto-create the SEO Agent as a virtual employee
         const currentOrgId = activeOrgId ?? orgId;
+        const seoAgentCreatedAt = Date.now();
         addVirtualEmployee(currentOrgId, {
-          id: `ve-seo-${Date.now()}`,
+          id: `ve-seo-${seoAgentCreatedAt}`,
           name: agentName,
           description: `${agentName} is a dedicated AI virtual employee configured to autonomously manage the ${autoName} SEO content strategy. It researches trending keywords, drafts fully optimised articles, inserts internal links, and schedules publication — all without manual intervention. Primary goal: ${finalConfig.goal || "organic traffic growth"}. Content length: ${finalConfig.articleLength || "Medium (1,000–1,500 words)"}. Industry focus: ${finalConfig.industry || "General"}. Target audience: ${finalConfig.targetAudience || "Defined in configuration"}.`,
           role: "Member",
@@ -398,6 +399,7 @@ export default function SeoConfigPage({
           apiKey: `neo_S-${Math.random().toString(36).slice(2, 12)}-SeoAgent`,
           orgId: currentOrgId,
           appAccess: [autoName],
+          createdAt: seoAgentCreatedAt,
         });
       }
 

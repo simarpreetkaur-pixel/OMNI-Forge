@@ -242,8 +242,13 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   );
 
   const getVirtualEmployees = useCallback(
-    (orgId: string): VirtualEmployee[] =>
-      store.workspaces[orgId]?.virtualEmployees ?? SEED_VIRTUAL_EMPLOYEES,
+    (orgId: string): VirtualEmployee[] => {
+      const employees =
+        store.workspaces[orgId]?.virtualEmployees ?? SEED_VIRTUAL_EMPLOYEES;
+      return [...employees].sort(
+        (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0)
+      );
+    },
     [store.workspaces]
   );
 
