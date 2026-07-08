@@ -50,7 +50,7 @@ export default function SkillsAnalysingStep({ orgCount, onDone, compact, orgName
     <div className={cn("animate-fade-in flex flex-col", compact ? "gap-6" : "gap-8")}>
       <div className="flex flex-col gap-1">
         <h2 className={cn("font-bold leading-[1.3] text-[#0a0a0a]", compact ? "text-[18px]" : "text-[22px]")}>
-          Analysing skills file
+          Analysing knowledge base
         </h2>
         <p className="text-sm leading-5 text-[#737373]">
           {orgName ? (

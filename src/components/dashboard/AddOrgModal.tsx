@@ -118,7 +118,7 @@ export default function AddOrgModal({ open, onOpenChange }: AddOrgModalProps) {
         <div className="mb-6 flex items-start justify-between">
           <div className="flex flex-col gap-1">
             <h2 className="text-[18px] font-semibold leading-tight text-[#0a0a0a]">
-              {step === "analysing" ? "Analysing skills file" : "Add another organisation"}
+              {step === "analysing" ? "Analysing knowledge base" : "Add another organisation"}
             </h2>
             {step === "form" && (
               <p className="text-[14px] text-[#737373]">

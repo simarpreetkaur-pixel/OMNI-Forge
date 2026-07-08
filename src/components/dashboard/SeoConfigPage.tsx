@@ -533,7 +533,7 @@ export default function SeoConfigPage({
           {activeTab === "ai" && (
             <div className="flex h-full flex-col">
               <div className="flex-1 overflow-y-auto px-8 py-6">
-                <div className="mx-auto flex max-w-[680px] flex-col gap-3">
+                <div className="flex max-w-[680px] flex-col gap-3">
                   {messages.map((msg, i) => {
                     if (msg.role === "action" && msg.type === "add-secret") {
                       return (
@@ -705,7 +705,7 @@ export default function SeoConfigPage({
 
               {/* Input */}
               <div className="shrink-0 border-t border-[#e7e7f0] bg-white px-8 py-4">
-                <div className="mx-auto flex max-w-[680px] items-center gap-3 rounded-xl border border-[#e7e7f0] bg-[#fafafa] px-4 py-2.5">
+                <div className="flex max-w-[680px] items-center gap-3 rounded-xl border border-[#e7e7f0] bg-[#fafafa] px-4 py-2.5">
                   <input
                     ref={inputRef}
                     type="text"
