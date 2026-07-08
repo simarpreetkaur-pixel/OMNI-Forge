@@ -257,7 +257,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
           ...prev.workspaces,
           [orgId]: {
             ...workspace,
-            virtualEmployees: [...workspace.virtualEmployees, employee],
+            virtualEmployees: [employee, ...workspace.virtualEmployees],
           },
         },
       };
