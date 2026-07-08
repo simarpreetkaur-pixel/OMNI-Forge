@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import {
   ArrowLeft, ChevronRight, Send, Sparkles,
   ToggleLeft, ToggleRight, Copy, Check, FileText, Key,
-  CheckCircle2, Newspaper, Settings2,
+  CheckCircle2, Newspaper, Settings2, Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { parseMessage } from "@/lib/seoAiParser";
@@ -29,7 +29,9 @@ type Tab = "ai" | "config" | "skill-file";
 type Message =
   | { role: "ai"; text: string }
   | { role: "user"; text: string }
+  | { role: "building"; text: string }
   | { role: "action"; type: "add-secret" }
+  | { role: "action"; type: "agent-created"; agentName: string }
   | { role: "action"; type: "app-created"; appName: string; goal: string; articleLength: string };
 
 interface SeoConfigPageProps {
@@ -168,7 +170,7 @@ function ToggleRow({
 export default function SeoConfigPage({
   orgId, appId, appName, onBack, initialConfig, initialTimestamp, isAlreadySaved,
 }: SeoConfigPageProps) {
-  const { setAppConfig, getConfigTimestamp, addApp } = useOrg();
+  const { setAppConfig, getConfigTimestamp, addApp, addVirtualEmployee, activeOrgId } = useOrg();
 
   // editMode = app already exists in My Apps (full setup was done before)
   const isEditMode = !!isAlreadySaved;
@@ -187,6 +189,7 @@ export default function SeoConfigPage({
   const [secretModalOpen, setSecretModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
+  const [isBuilding, setIsBuilding] = useState(false);
 
   const greetedRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -350,39 +353,78 @@ export default function SeoConfigPage({
   function handleSecretSaved() {
     setSecretModalOpen(false);
 
-    // Finalise config (name was set in step 0, but guard against empty just in case)
     const autoName = config.campaignName?.trim() || appName || "SEO Campaign";
     const finalConfig = { ...config, campaignName: autoName };
-    setConfig(finalConfig);
+    const agentName = `${autoName} Agent`;
 
-    // Persist config to OrgContext
-    setAppConfig(orgId, appId, finalConfig);
+    // Stream building steps into chat
+    const buildingSteps = [
+      "Saving credentials securely...",
+      "Configuring SEO content pipeline...",
+      `Creating **${agentName}** virtual employee...`,
+      "Provisioning runtime environment...",
+    ];
 
-    // If this is a new app, add it to My Apps now using the campaign name
-    if (!isEditMode) {
-      addApp(orgId, {
-        id: appId,
-        name: autoName,
-        description: "AI-powered SEO content automation",
-      });
-    }
+    setIsBuilding(true);
 
-    setFlowStep("done");
+    buildingSteps.forEach((text, i) => {
+      setTimeout(() => {
+        setMessages((prev) => [...prev, { role: "building", text } as Message]);
+      }, 300 + i * 720);
+    });
 
-    setIsTyping(true);
+    // After all steps finish: persist state, create VE, show success
+    const totalDelay = 300 + (buildingSteps.length - 1) * 720 + 500;
+
     setTimeout(() => {
+      setConfig(finalConfig);
+      setAppConfig(orgId, appId, finalConfig);
+
+      if (!isEditMode) {
+        addApp(orgId, {
+          id: appId,
+          name: autoName,
+          description: "AI-powered SEO content automation",
+        });
+
+        // Auto-create the SEO Agent as a virtual employee
+        const currentOrgId = activeOrgId ?? orgId;
+        addVirtualEmployee(currentOrgId, {
+          id: `ve-seo-${Date.now()}`,
+          name: agentName,
+          description: `AI agent powering the ${autoName} SEO campaign. Autonomously generates, optimises, and publishes SEO articles. Goal: ${finalConfig.goal || "organic traffic growth"}. Article length: ${finalConfig.articleLength || "Medium (1,000–1,500 words)"}.`,
+          role: "Member",
+          status: ["connected", "runtime · active"],
+          apiKey: `neo_S-${Math.random().toString(36).slice(2, 12)}-SeoAgent`,
+          orgId: currentOrgId,
+        });
+      }
+
+      setFlowStep("done");
+      setIsBuilding(false);
+
+      // Show agent-created micro card
       setMessages((prev) => [
         ...prev,
-        {
-          role: "action",
-          type: "app-created",
-          appName: autoName,
-          goal: finalConfig.goal || "",
-          articleLength: finalConfig.articleLength || "",
-        },
+        { role: "action", type: "agent-created", agentName } as Message,
       ]);
-      setIsTyping(false);
-    }, 500);
+
+      // Then show app success card
+      setIsTyping(true);
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "action",
+            type: "app-created",
+            appName: autoName,
+            goal: finalConfig.goal || "",
+            articleLength: finalConfig.articleLength || "",
+          },
+        ]);
+        setIsTyping(false);
+      }, 800);
+    }, totalDelay);
   }
 
   // ── Back navigation guard ─────────────────────────────────────────────────
@@ -501,6 +543,41 @@ export default function SeoConfigPage({
                             <Key className="size-4 shrink-0" />
                             Add integration credentials →
                           </button>
+                        </div>
+                      );
+                    }
+
+                    if (msg.role === "building") {
+                      return (
+                        <div key={i} className="flex items-center gap-2.5 animate-fade-in py-0.5">
+                          <Check className="size-3.5 shrink-0 text-green-500" strokeWidth={2.5} />
+                          <span className="text-[13px] text-[#737373]">{renderText(msg.text)}</span>
+                        </div>
+                      );
+                    }
+
+                    if (msg.role === "action" && msg.type === "agent-created") {
+                      return (
+                        <div key={i} className="self-start animate-fade-in">
+                          <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 px-4 py-3 shadow-sm">
+                            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100">
+                              <Bot className="size-4 text-emerald-700" strokeWidth={1.5} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[13px] font-semibold text-emerald-800">
+                                {msg.agentName} is live!
+                              </p>
+                              <p className="text-[11px] text-emerald-600">
+                                Added to Workforce → Virtual Employees
+                              </p>
+                            </div>
+                            <div className="flex flex-col items-end gap-0.5">
+                              <span className="text-[10px] font-medium text-emerald-500 uppercase tracking-wide">
+                                New
+                              </span>
+                              <span className="text-[10px] text-emerald-400">↑ Sidebar</span>
+                            </div>
+                          </div>
                         </div>
                       );
                     }
@@ -634,9 +711,11 @@ export default function SeoConfigPage({
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
                     }}
-                    disabled={isTyping || flowStep === "secret"}
+                    disabled={isTyping || flowStep === "secret" || isBuilding}
                     placeholder={
-                      flowStep === "secret"
+                      isBuilding
+                        ? "Setting up your app…"
+                        : flowStep === "secret"
                         ? "Add your credentials above to continue…"
                         : flowStep === "done"
                         ? "Ask a question or describe a change…"
@@ -648,7 +727,7 @@ export default function SeoConfigPage({
                   <button
                     type="button"
                     onClick={handleSend}
-                    disabled={!input.trim() || isTyping || flowStep === "secret"}
+                    disabled={!input.trim() || isTyping || flowStep === "secret" || isBuilding}
                     className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-purple-600 text-white transition-colors hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Send className="size-3.5" />

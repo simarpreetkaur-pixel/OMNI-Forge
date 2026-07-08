@@ -56,9 +56,10 @@ type NavTabProps = {
   icon: LucideIcon;
   isActive: boolean;
   onClick: () => void;
+  showDot?: boolean;
 };
 
-function NavTab({ label, icon: Icon, isActive, onClick }: NavTabProps) {
+function NavTab({ label, icon: Icon, isActive, onClick, showDot }: NavTabProps) {
   return (
     <button
       type="button"
@@ -78,6 +79,9 @@ function NavTab({ label, icon: Icon, isActive, onClick }: NavTabProps) {
       >
         {label}
       </span>
+      {showDot && (
+        <span className="flex size-2 shrink-0 animate-pulse rounded-full bg-green-500" />
+      )}
     </button>
   );
 }
@@ -122,7 +126,7 @@ function NavSection({
 
 export default function Sidebar({ onNavigate }: { onNavigate?: (id: string) => void } = {}) {
   const navigate = useNavigate();
-  const { orgs, activeOrgId, activeOrg, setActiveOrgId, clearSession } = useOrg();
+  const { orgs, activeOrgId, activeOrg, setActiveOrgId, clearSession, recentVeFlash, clearVeFlash } = useOrg();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [addOrgModalOpen, setAddOrgModalOpen] = useState(false);
@@ -190,7 +194,11 @@ export default function Sidebar({ onNavigate }: { onNavigate?: (id: string) => v
                   label={label}
                   icon={icon}
                   isActive={activeTab === id}
-                  onClick={() => handleNavTab(id)}
+                  showDot={id === "virtual-employees" && recentVeFlash}
+                  onClick={() => {
+                    handleNavTab(id);
+                    if (id === "virtual-employees" && recentVeFlash) clearVeFlash();
+                  }}
                 />
               ))}
             </NavSection>

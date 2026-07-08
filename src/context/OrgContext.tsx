@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -11,6 +12,7 @@ import type { AppItem } from "@/components/dashboard/AppsTab";
 import type { MiniApp } from "@/components/dashboard/MiniAppsTab";
 import type { Org } from "@/components/onboarding/OrgDetailsStep";
 import type { SeoConfig } from "@/types/seo";
+import { type VirtualEmployee, SEED_VIRTUAL_EMPLOYEES } from "@/types/virtualEmployee";
 
 export type SavedOrg = {
   id: string;
@@ -26,6 +28,7 @@ type OrgWorkspace = {
   miniApps: MiniApp[];
   appConfigs: Record<string, SeoConfig>;
   configTimestamps: Record<string, number>;
+  virtualEmployees: VirtualEmployee[];
 };
 
 type OrgStore = {
@@ -36,15 +39,14 @@ type OrgStore = {
 
 const STORAGE_KEY = "omni-forge-org-store";
 
-const EMPTY_WORKSPACE: OrgWorkspace = {
-  apps: [],
-  miniApps: [],
-  appConfigs: {},
-  configTimestamps: {},
-};
-
-function createId() {
-  return `org-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+function createEmptyWorkspace(): OrgWorkspace {
+  return {
+    apps: [],
+    miniApps: [],
+    appConfigs: {},
+    configTimestamps: {},
+    virtualEmployees: SEED_VIRTUAL_EMPLOYEES.map((e) => ({ ...e })),
+  };
 }
 
 function loadStore(): OrgStore {
@@ -100,6 +102,12 @@ type OrgContextValue = {
   getAppConfig: (orgId: string, appId: string) => SeoConfig | null;
   setAppConfig: (orgId: string, appId: string, config: SeoConfig) => void;
   getConfigTimestamp: (orgId: string, appId: string) => number | null;
+  getVirtualEmployees: (orgId: string) => VirtualEmployee[];
+  addVirtualEmployee: (orgId: string, employee: VirtualEmployee) => void;
+  removeVirtualEmployee: (orgId: string, employeeId: string) => void;
+  updateVirtualEmployee: (orgId: string, employeeId: string, updates: Partial<VirtualEmployee>) => void;
+  recentVeFlash: boolean;
+  clearVeFlash: () => void;
   clearSession: () => void;
 };
 
@@ -107,19 +115,21 @@ const OrgContext = createContext<OrgContextValue | null>(null);
 
 export function OrgProvider({ children }: { children: ReactNode }) {
   const [store, setStore] = useState<OrgStore>(loadStore);
+  const [recentVeFlash, setRecentVeFlash] = useState(false);
+  const veFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     persistStore(store);
   }, [store]);
 
   const addOrg = useCallback((org: Omit<SavedOrg, "id">) => {
-    const id = createId();
+    const id = `org-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     setStore((prev) => ({
       orgs: [...prev.orgs, { ...org, id }],
       activeOrgId: id,
       workspaces: {
         ...prev.workspaces,
-        [id]: prev.workspaces[id] ?? { ...EMPTY_WORKSPACE },
+        [id]: prev.workspaces[id] ?? createEmptyWorkspace(),
       },
     }));
     return id;
@@ -141,7 +151,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
   const addApp = useCallback((orgId: string, app: AppItem) => {
     setStore((prev) => {
-      const workspace = prev.workspaces[orgId] ?? { ...EMPTY_WORKSPACE };
+      const workspace = prev.workspaces[orgId] ?? createEmptyWorkspace();
       if (workspace.apps.some((existing) => existing.id === app.id)) {
         return prev;
       }
@@ -171,7 +181,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
   const addMiniApp = useCallback((orgId: string, miniApp: MiniApp) => {
     setStore((prev) => {
-      const workspace = prev.workspaces[orgId] ?? { ...EMPTY_WORKSPACE };
+      const workspace = prev.workspaces[orgId] ?? createEmptyWorkspace();
       if (workspace.miniApps.some((existing) => existing.id === miniApp.id)) {
         return prev;
       }
@@ -207,7 +217,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
   const setAppConfig = useCallback((orgId: string, appId: string, config: SeoConfig) => {
     setStore((prev) => {
-      const workspace = prev.workspaces[orgId] ?? { ...EMPTY_WORKSPACE };
+      const workspace = prev.workspaces[orgId] ?? createEmptyWorkspace();
       return {
         ...prev,
         workspaces: {
@@ -230,6 +240,77 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       store.workspaces[orgId]?.configTimestamps?.[appId] ?? null,
     [store.workspaces]
   );
+
+  const getVirtualEmployees = useCallback(
+    (orgId: string): VirtualEmployee[] =>
+      store.workspaces[orgId]?.virtualEmployees ?? SEED_VIRTUAL_EMPLOYEES,
+    [store.workspaces]
+  );
+
+  const addVirtualEmployee = useCallback((orgId: string, employee: VirtualEmployee) => {
+    setStore((prev) => {
+      const workspace = prev.workspaces[orgId] ?? createEmptyWorkspace();
+      if (workspace.virtualEmployees.some((e) => e.id === employee.id)) return prev;
+      return {
+        ...prev,
+        workspaces: {
+          ...prev.workspaces,
+          [orgId]: {
+            ...workspace,
+            virtualEmployees: [...workspace.virtualEmployees, employee],
+          },
+        },
+      };
+    });
+    // Trigger sidebar flash indicator
+    setRecentVeFlash(true);
+    if (veFlashTimerRef.current) clearTimeout(veFlashTimerRef.current);
+    veFlashTimerRef.current = setTimeout(() => setRecentVeFlash(false), 6000);
+  }, []);
+
+  const removeVirtualEmployee = useCallback((orgId: string, employeeId: string) => {
+    setStore((prev) => {
+      const workspace = prev.workspaces[orgId];
+      if (!workspace) return prev;
+      return {
+        ...prev,
+        workspaces: {
+          ...prev.workspaces,
+          [orgId]: {
+            ...workspace,
+            virtualEmployees: workspace.virtualEmployees.filter((e) => e.id !== employeeId),
+          },
+        },
+      };
+    });
+  }, []);
+
+  const updateVirtualEmployee = useCallback(
+    (orgId: string, employeeId: string, updates: Partial<VirtualEmployee>) => {
+      setStore((prev) => {
+        const workspace = prev.workspaces[orgId];
+        if (!workspace) return prev;
+        return {
+          ...prev,
+          workspaces: {
+            ...prev.workspaces,
+            [orgId]: {
+              ...workspace,
+              virtualEmployees: workspace.virtualEmployees.map((e) =>
+                e.id === employeeId ? { ...e, ...updates } : e
+              ),
+            },
+          },
+        };
+      });
+    },
+    []
+  );
+
+  const clearVeFlash = useCallback(() => {
+    setRecentVeFlash(false);
+    if (veFlashTimerRef.current) clearTimeout(veFlashTimerRef.current);
+  }, []);
 
   const clearSession = useCallback(() => {
     sessionStorage.removeItem(STORAGE_KEY);
@@ -257,6 +338,12 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       getAppConfig,
       setAppConfig,
       getConfigTimestamp,
+      getVirtualEmployees,
+      addVirtualEmployee,
+      removeVirtualEmployee,
+      updateVirtualEmployee,
+      recentVeFlash,
+      clearVeFlash,
       clearSession,
     }),
     [
@@ -274,6 +361,12 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       getAppConfig,
       setAppConfig,
       getConfigTimestamp,
+      getVirtualEmployees,
+      addVirtualEmployee,
+      removeVirtualEmployee,
+      updateVirtualEmployee,
+      recentVeFlash,
+      clearVeFlash,
       clearSession,
     ]
   );

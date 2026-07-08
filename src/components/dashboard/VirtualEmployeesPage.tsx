@@ -1,130 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import {
   MoreHorizontal, Trash2, Bot, ArrowLeft, Pencil, Copy, Check,
-  RefreshCw, Play, Square, Zap, X,
+  RefreshCw, Play, Square, Zap, X, Save,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-export interface VirtualEmployee {
-  id: string;
-  name: string;
-  description: string;
-  role: "Member" | "Admin";
-  status: string[];
-  apiKey: string;
-  orgId: string;
-}
-
-function makeKey(prefix: string) {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const rand = (n: number) =>
-    Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-  return `neo_${rand(1)}-${rand(10)}-${prefix}${rand(8)}`;
-}
-
-const SEED_EMPLOYEES: VirtualEmployee[] = [
-  {
-    id: "ve-1",
-    name: "Test 1",
-    description: "Social media posts everyday",
-    role: "Member",
-    status: ["disconnected", "runtime · missing"],
-    apiKey: "neo_M-zdlWCbA8XTd-TevjI0XLmiy8v0U4T2",
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-  {
-    id: "ve-2",
-    name: "Random Bot",
-    description: "For testing random stuffs on the platform",
-    role: "Member",
-    status: ["disconnected", "runtime · missing"],
-    apiKey: makeKey("Rnd"),
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-  {
-    id: "ve-3",
-    name: "Chat Bot Configurator",
-    description: "This maintains the configuration of chat channels and chat bot",
-    role: "Member",
-    status: ["connected", "runtime · active"],
-    apiKey: makeKey("CBC"),
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-  {
-    id: "ve-4",
-    name: "Operations Manager",
-    description: "Fetch internal dashboard tasks and priorities the tasks for agent to work in efficiently",
-    role: "Member",
-    status: ["connected", "runtime · active"],
-    apiKey: makeKey("Ops"),
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-  {
-    id: "ve-5",
-    name: "Automated Tester",
-    description: "Test company existing flows and new launched feature for any bug for blocker",
-    role: "Member",
-    status: ["disconnected", "runtime · missing"],
-    apiKey: makeKey("Aut"),
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-  {
-    id: "ve-6",
-    name: "Acko Triage & Resolve (ATR)",
-    description: "ATR is an autonomous agent built to immediately intercept, investigate, and process customer emails. It assesses the intent of incoming queries.",
-    role: "Member",
-    status: ["connected", "runtime · active"],
-    apiKey: makeKey("ATR"),
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-  {
-    id: "ve-7",
-    name: "Content Manager",
-    description: "Content Generator & Manager — To create engaging content and manage it",
-    role: "Member",
-    status: ["disconnected", "runtime · missing"],
-    apiKey: makeKey("Cnt"),
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-  {
-    id: "ve-8",
-    name: "Helper",
-    description: "You help in modifying things in neo and other places",
-    role: "Member",
-    status: ["disconnected", "runtime · missing"],
-    apiKey: makeKey("Hlp"),
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-  {
-    id: "ve-9",
-    name: "Health Claim Concierge",
-    description: "Can co-ordinate with hospitals and internal employees on behalf of customer claims",
-    role: "Member",
-    status: ["connected", "runtime · active"],
-    apiKey: makeKey("HCC"),
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-  {
-    id: "ve-10",
-    name: "Software Developer",
-    description: "Writes, manages and maintains code",
-    role: "Member",
-    status: ["disconnected", "runtime · missing"],
-    apiKey: makeKey("Dev"),
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-  {
-    id: "ve-11",
-    name: "ACKO Content Creator",
-    description: "Creates high-quality content aligned with ACKO brand guidelines",
-    role: "Member",
-    status: ["connected", "runtime · active"],
-    apiKey: makeKey("ACC"),
-    orgId: "3q3ouoipdhOHcV2V8XlQ5ai7HlymA1vz",
-  },
-];
+import { useOrg } from "@/context/OrgContext";
+import type { VirtualEmployee } from "@/types/virtualEmployee";
 
 // ─── List row ──────────────────────────────────────────────────────────────────
 
@@ -154,18 +35,14 @@ function EmployeeRow({
 
   return (
     <div className="flex items-center gap-4 border-b border-[#f0f0f0] px-4 py-0 last:border-b-0 hover:bg-[#fafafa] transition-colors group">
-      {/* Clickable area */}
       <button
         type="button"
         onClick={onClick}
         className="flex flex-1 items-center gap-4 py-4 text-left outline-none min-w-0"
       >
-        {/* Bot avatar */}
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-[#e7e7f0] bg-white">
           <Bot className="size-5 text-[#737373]" strokeWidth={1.5} />
         </div>
-
-        {/* Name + description */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-[14px] font-semibold text-[#0a0a0a]">{employee.name}</span>
@@ -175,8 +52,6 @@ function EmployeeRow({
           </div>
           <p className="mt-0.5 truncate text-[13px] text-[#737373]">{employee.description}</p>
         </div>
-
-        {/* Status dot */}
         <span
           className={cn(
             "size-2 shrink-0 rounded-full",
@@ -185,7 +60,6 @@ function EmployeeRow({
         />
       </button>
 
-      {/* 3-dot menu */}
       <div ref={menuRef} className="relative shrink-0">
         <button
           type="button"
@@ -237,13 +111,40 @@ function CopyButton({ text }: { text: string }) {
 function EmployeeDetail({
   employee,
   onBack,
+  onUpdateDescription,
 }: {
   employee: VirtualEmployee;
   onBack: () => void;
+  onUpdateDescription: (desc: string) => void;
 }) {
   const [activeTab, setActiveTab] = useState<DetailTab>("notifications");
   const [notifTab, setNotifTab] = useState<NotifTab>("pending");
+  const [editingDesc, setEditingDesc] = useState(false);
+  const [descDraft, setDescDraft] = useState(employee.description);
+  const descRef = useRef<HTMLTextAreaElement>(null);
   const isConnected = employee.status.some((s) => s === "connected");
+
+  // Keep draft in sync when employee updates (after save)
+  useEffect(() => {
+    if (!editingDesc) setDescDraft(employee.description);
+  }, [employee.description, editingDesc]);
+
+  useEffect(() => {
+    if (editingDesc) descRef.current?.focus();
+  }, [editingDesc]);
+
+  function handleSaveDesc() {
+    const trimmed = descDraft.trim();
+    if (trimmed && trimmed !== employee.description) {
+      onUpdateDescription(trimmed);
+    }
+    setEditingDesc(false);
+  }
+
+  function handleCancelDesc() {
+    setDescDraft(employee.description);
+    setEditingDesc(false);
+  }
 
   const cliCommand = `neo-cli config set-key ${employee.apiKey} --url https://api.omniackodev.com --org ${employee.orgId}`;
   const curlCommand = `curl -X POST https://api.omniackodev.com/api/neo/virtual-employees/PkT45mZDmIvVm8N6M22lD/notifications \\\n  -H "authorization: Bearer ${employee.apiKey}" \\\n  -H "x-organization-id: ${employee.orgId}HlymA1vz" \\\n  -H "content-type: application/json" \\\n  -d '{"description":"Review the latest customer escalation and decide next steps.","trigger":"manual"}'`;
@@ -287,17 +188,55 @@ function EmployeeDetail({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-3">
-                <div>
+                <div className="flex-1 min-w-0">
                   <h1 className="text-[20px] font-semibold text-[#0a0a0a]">{employee.name}</h1>
-                  <p className="mt-0.5 text-[14px] text-[#737373]">{employee.description}</p>
+
+                  {/* Editable description */}
+                  {editingDesc ? (
+                    <div className="mt-1.5">
+                      <textarea
+                        ref={descRef}
+                        value={descDraft}
+                        onChange={(e) => setDescDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSaveDesc(); }
+                          if (e.key === "Escape") handleCancelDesc();
+                        }}
+                        rows={3}
+                        className="w-full resize-none rounded-lg border border-purple-400 bg-white px-3 py-2 text-[14px] text-[#0a0a0a] outline-none ring-2 ring-purple-100"
+                      />
+                      <div className="mt-2 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleSaveDesc}
+                          className="flex items-center gap-1.5 rounded-lg bg-[#0a0a0a] px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#262626]"
+                        >
+                          <Save className="size-3 shrink-0" strokeWidth={2} />
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelDesc}
+                          className="rounded-lg border border-[#e5e5e5] px-3 py-1.5 text-[12px] font-medium text-[#737373] transition-colors hover:bg-[#f5f5f5]"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="group/desc mt-0.5 flex items-start gap-2">
+                      <p className="flex-1 text-[14px] text-[#737373]">{employee.description}</p>
+                      <button
+                        type="button"
+                        onClick={() => { setDescDraft(employee.description); setEditingDesc(true); }}
+                        className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md text-[#c0c0c0] transition-colors hover:bg-[#f0f0f0] hover:text-[#737373]"
+                        title="Edit description"
+                      >
+                        <Pencil className="size-3.5" strokeWidth={1.5} />
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  className="flex size-8 shrink-0 items-center justify-center rounded-md border border-[#e5e5e5] bg-white text-[#737373] transition-colors hover:bg-[#f5f5f5]"
-                  aria-label="Edit"
-                >
-                  <Pencil className="size-4" strokeWidth={1.5} />
-                </button>
               </div>
 
               {/* Status badges */}
@@ -413,7 +352,7 @@ function EmployeeDetail({
           </div>
 
           {/* Detail tabs */}
-          <div className="rounded-xl border border-[#e7e7f0] bg-white overflow-hidden">
+          <div className="overflow-hidden rounded-xl border border-[#e7e7f0] bg-white">
             <div className="flex border-b border-[#e7e7f0]">
               {DETAIL_TABS.map((tab) => (
                 <button
@@ -432,7 +371,6 @@ function EmployeeDetail({
               ))}
             </div>
 
-            {/* Notifications tab */}
             {activeTab === "notifications" && (
               <div>
                 <div className="flex border-b border-[#e7e7f0] px-4">
@@ -460,7 +398,6 @@ function EmployeeDetail({
               </div>
             )}
 
-            {/* Other tabs — placeholder */}
             {activeTab !== "notifications" && (
               <div className="px-4 py-8 text-center">
                 <p className="text-[13px] text-[#a0a0a0] capitalize">
@@ -479,19 +416,24 @@ function EmployeeDetail({
 // ─── Page root ─────────────────────────────────────────────────────────────────
 
 export default function VirtualEmployeesPage() {
-  const [employees, setEmployees] = useState<VirtualEmployee[]>(SEED_EMPLOYEES);
-  const [selected, setSelected] = useState<VirtualEmployee | null>(null);
+  const { activeOrgId, getVirtualEmployees, removeVirtualEmployee, updateVirtualEmployee } = useOrg();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const orgId = activeOrgId ?? "";
+  const employees = getVirtualEmployees(orgId);
+  const selected = employees.find((e) => e.id === selectedId) ?? null;
 
   function handleDelete(id: string) {
-    setEmployees((prev) => prev.filter((e) => e.id !== id));
-    if (selected?.id === id) setSelected(null);
+    removeVirtualEmployee(orgId, id);
+    if (selectedId === id) setSelectedId(null);
   }
 
   if (selected) {
     return (
       <EmployeeDetail
         employee={selected}
-        onBack={() => setSelected(null)}
+        onBack={() => setSelectedId(null)}
+        onUpdateDescription={(desc) => updateVirtualEmployee(orgId, selected.id, { description: desc })}
       />
     );
   }
@@ -535,7 +477,7 @@ export default function VirtualEmployeesPage() {
                 <EmployeeRow
                   key={emp.id}
                   employee={emp}
-                  onClick={() => setSelected(emp)}
+                  onClick={() => setSelectedId(emp.id)}
                   onDelete={() => handleDelete(emp.id)}
                 />
               ))}
