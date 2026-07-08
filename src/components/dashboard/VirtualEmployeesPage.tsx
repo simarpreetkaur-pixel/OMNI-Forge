@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   MoreHorizontal, Trash2, Bot, ArrowLeft, Pencil, Copy, Check,
-  Zap, X, Save, LayoutGrid,
+  Zap, X, Save, LayoutGrid, Eye, EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useOrg } from "@/context/OrgContext";
@@ -121,8 +121,17 @@ function EmployeeDetail({
   const [notifTab, setNotifTab] = useState<NotifTab>("pending");
   const [editingDesc, setEditingDesc] = useState(false);
   const [descDraft, setDescDraft] = useState(employee.description);
+  const [showApiKey, setShowApiKey] = useState(false);
   const descRef = useRef<HTMLTextAreaElement>(null);
   const isConnected = employee.status.some((s) => s === "connected");
+
+  // Derive app access: use stored list, or infer from agent name pattern "{AppName} Agent"
+  const derivedAppAccess: string[] =
+    employee.appAccess && employee.appAccess.length > 0
+      ? employee.appAccess
+      : employee.name.endsWith(" Agent")
+      ? [employee.name.replace(/ Agent$/, "")]
+      : [];
 
   // Keep draft in sync when employee updates (after save)
   useEffect(() => {
@@ -287,9 +296,9 @@ function EmployeeDetail({
               <p className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-[#a0a0a0]">
                 App Access
               </p>
-              {employee.appAccess && employee.appAccess.length > 0 ? (
+              {derivedAppAccess.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                  {employee.appAccess.map((app) => (
+                  {derivedAppAccess.map((app) => (
                     <span
                       key={app}
                       className="flex items-center gap-1.5 rounded-lg border border-[#e7e7f0] bg-[#fafafa] px-3 py-1.5 text-[13px] font-medium text-[#0a0a0a]"
@@ -311,9 +320,20 @@ function EmployeeDetail({
               </p>
               <div className="flex items-center justify-between gap-3">
                 <code className="flex-1 truncate font-mono text-[13px] text-[#0a0a0a]">
-                  {employee.apiKey}
+                  {showApiKey ? employee.apiKey : "•".repeat(Math.min(employee.apiKey.length, 36))}
                 </code>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowApiKey((v) => !v)}
+                    className="flex size-7 items-center justify-center rounded-md text-[#a0a0a0] transition-colors hover:bg-[#f0f0f0] hover:text-[#0a0a0a]"
+                    aria-label={showApiKey ? "Hide API key" : "Show API key"}
+                  >
+                    {showApiKey
+                      ? <EyeOff className="size-4" strokeWidth={1.5} />
+                      : <Eye className="size-4" strokeWidth={1.5} />
+                    }
+                  </button>
                   <CopyButton text={employee.apiKey} />
                   <button
                     type="button"
