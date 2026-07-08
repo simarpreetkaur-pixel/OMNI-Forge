@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import {
   ArrowLeft, ChevronRight, Send, Sparkles,
   ToggleLeft, ToggleRight, Copy, Check, FileText, Key,
+  CheckCircle2, Newspaper, Settings2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { parseMessage } from "@/lib/seoAiParser";
@@ -28,7 +29,8 @@ type Tab = "ai" | "config" | "skill-file";
 type Message =
   | { role: "ai"; text: string }
   | { role: "user"; text: string }
-  | { role: "action"; type: "add-secret" };
+  | { role: "action"; type: "add-secret" }
+  | { role: "action"; type: "app-created"; appName: string; goal: string; articleLength: string };
 
 interface SeoConfigPageProps {
   orgId: string;
@@ -372,8 +374,11 @@ export default function SeoConfigPage({
       setMessages((prev) => [
         ...prev,
         {
-          role: "ai",
-          text: `Credentials saved securely. 🔒\n\nYour SEO app **${autoName}** is now active!\n\n• **Goal**: ${finalConfig.goal || "—"}\n• **Article length**: ${finalConfig.articleLength || "—"}\n\nYou can review everything in the **Configuration** tab or see the generated **Skill File** that powers this app. I'm here if you want to change anything.`,
+          role: "action",
+          type: "app-created",
+          appName: autoName,
+          goal: finalConfig.goal || "",
+          articleLength: finalConfig.articleLength || "",
         },
       ]);
       setIsTyping(false);
@@ -496,6 +501,72 @@ export default function SeoConfigPage({
                             <Key className="size-4 shrink-0" />
                             Add integration credentials →
                           </button>
+                        </div>
+                      );
+                    }
+
+                    if (msg.role === "action" && msg.type === "app-created") {
+                      return (
+                        <div key={i} className="self-start w-full max-w-[88%] animate-fade-in">
+                          <div className="mb-0.5 flex items-center gap-1.5">
+                            <div className="flex size-5 items-center justify-center rounded-full bg-purple-600">
+                              <Sparkles className="size-2.5 text-white" />
+                            </div>
+                            <span className="text-[11px] font-medium text-[#737373]">OMNI Forge</span>
+                          </div>
+                          {/* Success card */}
+                          <div className="overflow-hidden rounded-2xl rounded-tl-sm border border-green-200 bg-white shadow-sm">
+                            {/* Green top banner */}
+                            <div className="flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-3.5">
+                              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white/20">
+                                <CheckCircle2 className="size-5 text-white" strokeWidth={2} />
+                              </div>
+                              <div>
+                                <p className="text-[13px] font-bold text-white">App is live!</p>
+                                <p className="text-[11px] text-white/80">Your SEO app is active and ready to generate articles</p>
+                              </div>
+                            </div>
+
+                            {/* App name + details */}
+                            <div className="px-4 py-4">
+                              <p className="text-[17px] font-bold text-[#0a0a0a]">{msg.appName}</p>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {msg.goal && (
+                                  <span className="rounded-full bg-purple-50 px-2.5 py-1 text-[11px] font-medium text-purple-700">
+                                    🎯 {msg.goal}
+                                  </span>
+                                )}
+                                {msg.articleLength && (
+                                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700">
+                                    📝 {msg.articleLength}
+                                  </span>
+                                )}
+                                <span className="rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-medium text-green-700">
+                                  ✓ Credentials saved
+                                </span>
+                              </div>
+
+                              {/* CTA buttons */}
+                              <div className="mt-4 flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={onBack}
+                                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#0a0a0a] px-3 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#262626]"
+                                >
+                                  <Newspaper className="size-3.5 shrink-0" strokeWidth={2} />
+                                  View articles
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveTab("config")}
+                                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#e5e5e5] bg-white px-3 py-2.5 text-[13px] font-medium text-[#0a0a0a] transition-colors hover:bg-[#f5f5f5]"
+                                >
+                                  <Settings2 className="size-3.5 shrink-0" strokeWidth={1.5} />
+                                  Configuration
+                                </button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       );
                     }

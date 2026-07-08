@@ -85,7 +85,7 @@ export default function OrgDetailsStep({ orgs, onSaveOrg, onContinue, variant = 
     const errs: Record<string, string> = {};
     if (!form.name.trim()) errs.name = "Organisation name is required";
     if (!form.industry.trim()) errs.industry = "Industry is required";
-    if (!form.skillsFile) errs.skillsFile = "Skills file is required";
+    if (!form.skillsFile) errs.skillsFile = "Company knowledge document is required";
     return errs;
   }
 
@@ -286,10 +286,10 @@ export default function OrgDetailsStep({ orgs, onSaveOrg, onContinue, variant = 
             <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
           </div>
 
-          {/* Skills file upload */}
+          {/* Knowledge document upload */}
           <div className="flex flex-col gap-1.5">
             <Label className="text-sm font-medium text-[#0a0a0a]">
-              Skills File <span className="text-cerise-600">*</span>
+              Company Knowledge Document <span className="text-cerise-600">*</span>
             </Label>
             <div
               onClick={() => skillsRef.current?.click()}
@@ -310,12 +310,12 @@ export default function OrgDetailsStep({ orgs, onSaveOrg, onContinue, variant = 
                 </div>
               ) : (
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-[#0a0a0a]">Attach skills.md</span>
-                  <span className="text-xs text-[#737373]">.md files only — knowledge base for this org</span>
+                  <span className="text-sm font-medium text-[#0a0a0a]">Attach company document</span>
+                  <span className="text-xs text-[#737373]">PDF, DOC, DOCX — knowledge base for this org</span>
                 </div>
               )}
             </div>
-            <input ref={skillsRef} type="file" className="hidden" onChange={handleSkillsChange} />
+            <input ref={skillsRef} type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="hidden" onChange={handleSkillsChange} />
             {errors.skillsFile && <p className="text-xs text-cerise-600">{errors.skillsFile}</p>}
           </div>
 
