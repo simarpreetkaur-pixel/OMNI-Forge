@@ -632,7 +632,7 @@ export default function SeoConfigPage({
                                   className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#0a0a0a] px-3 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#262626]"
                                 >
                                   <Newspaper className="size-3.5 shrink-0" strokeWidth={2} />
-                                  View articles
+                                  Generate articles
                                 </button>
                                 <button
                                   type="button"
