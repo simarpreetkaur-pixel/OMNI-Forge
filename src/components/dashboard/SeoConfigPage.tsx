@@ -392,11 +392,12 @@ export default function SeoConfigPage({
         addVirtualEmployee(currentOrgId, {
           id: `ve-seo-${Date.now()}`,
           name: agentName,
-          description: `AI agent powering the ${autoName} SEO campaign. Autonomously generates, optimises, and publishes SEO articles. Goal: ${finalConfig.goal || "organic traffic growth"}. Article length: ${finalConfig.articleLength || "Medium (1,000–1,500 words)"}.`,
+          description: `${agentName} is a dedicated AI virtual employee configured to autonomously manage the ${autoName} SEO content strategy. It researches trending keywords, drafts fully optimised articles, inserts internal links, and schedules publication — all without manual intervention. Primary goal: ${finalConfig.goal || "organic traffic growth"}. Content length: ${finalConfig.articleLength || "Medium (1,000–1,500 words)"}. Industry focus: ${finalConfig.industry || "General"}. Target audience: ${finalConfig.targetAudience || "Defined in configuration"}.`,
           role: "Member",
           status: ["connected", "runtime · active"],
           apiKey: `neo_S-${Math.random().toString(36).slice(2, 12)}-SeoAgent`,
           orgId: currentOrgId,
+          appAccess: [autoName],
         });
       }
 

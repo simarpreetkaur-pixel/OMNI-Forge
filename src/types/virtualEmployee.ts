@@ -6,6 +6,7 @@ export interface VirtualEmployee {
   status: string[];
   apiKey: string;
   orgId: string;
+  appAccess?: string[];
 }
 
 export const SEED_VIRTUAL_EMPLOYEES: VirtualEmployee[] = [

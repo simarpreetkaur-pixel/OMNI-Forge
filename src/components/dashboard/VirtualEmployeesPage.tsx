@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   MoreHorizontal, Trash2, Bot, ArrowLeft, Pencil, Copy, Check,
-  RefreshCw, Play, Square, Zap, X, Save,
+  Zap, X, Save, LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useOrg } from "@/context/OrgContext";
@@ -192,6 +192,9 @@ function EmployeeDetail({
                   <h1 className="text-[20px] font-semibold text-[#0a0a0a]">{employee.name}</h1>
 
                   {/* Editable description */}
+                  <p className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-[#a0a0a0]">
+                    Job Description
+                  </p>
                   {editingDesc ? (
                     <div className="mt-1.5">
                       <textarea
@@ -202,7 +205,7 @@ function EmployeeDetail({
                           if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSaveDesc(); }
                           if (e.key === "Escape") handleCancelDesc();
                         }}
-                        rows={3}
+                        rows={4}
                         className="w-full resize-none rounded-lg border border-purple-400 bg-white px-3 py-2 text-[14px] text-[#0a0a0a] outline-none ring-2 ring-purple-100"
                       />
                       <div className="mt-2 flex items-center gap-2">
@@ -224,8 +227,8 @@ function EmployeeDetail({
                       </div>
                     </div>
                   ) : (
-                    <div className="group/desc mt-0.5 flex items-start gap-2">
-                      <p className="flex-1 text-[14px] text-[#737373]">{employee.description}</p>
+                    <div className="group/desc mt-1.5 flex items-start gap-2">
+                      <p className="flex-1 text-[14px] leading-[1.6] text-[#737373]">{employee.description}</p>
                       <button
                         type="button"
                         onClick={() => { setDescDraft(employee.description); setEditingDesc(true); }}
@@ -262,8 +265,8 @@ function EmployeeDetail({
               </div>
 
               {/* Action buttons */}
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                {!isConnected && (
+              {!isConnected && (
+                <div className="mt-4 flex flex-wrap items-center gap-2">
                   <button
                     type="button"
                     className="flex items-center gap-1.5 rounded-lg bg-[#0a0a0a] px-3 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[#262626]"
@@ -271,34 +274,35 @@ function EmployeeDetail({
                     <Zap className="size-3.5 shrink-0" strokeWidth={2} />
                     Provision runtime
                   </button>
-                )}
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 rounded-lg border border-[#e5e5e5] bg-white px-3 py-2 text-[13px] font-medium text-[#0a0a0a] transition-colors hover:bg-[#f5f5f5]"
-                >
-                  <RefreshCw className="size-3.5 shrink-0" strokeWidth={1.5} />
-                  Reload context
-                </button>
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 rounded-lg border border-[#e5e5e5] bg-white px-3 py-2 text-[13px] font-medium text-[#0a0a0a] transition-colors hover:bg-[#f5f5f5]"
-                >
-                  <Play className="size-3.5 shrink-0" strokeWidth={1.5} />
-                  Start agent
-                </button>
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 rounded-lg border border-[#e5e5e5] bg-white px-3 py-2 text-[13px] font-medium text-[#0a0a0a] transition-colors hover:bg-[#f5f5f5]"
-                >
-                  <Square className="size-3.5 shrink-0" strokeWidth={1.5} />
-                  Stop agent
-                </button>
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Cards */}
           <div className="mb-6 flex flex-col gap-4">
+
+            {/* App Access */}
+            <div className="rounded-xl border border-[#e7e7f0] bg-white p-4">
+              <p className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-[#a0a0a0]">
+                App Access
+              </p>
+              {employee.appAccess && employee.appAccess.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {employee.appAccess.map((app) => (
+                    <span
+                      key={app}
+                      className="flex items-center gap-1.5 rounded-lg border border-[#e7e7f0] bg-[#fafafa] px-3 py-1.5 text-[13px] font-medium text-[#0a0a0a]"
+                    >
+                      <LayoutGrid className="size-3.5 shrink-0 text-[#737373]" strokeWidth={1.5} />
+                      {app}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[13px] text-[#a0a0a0]">No apps assigned</p>
+              )}
+            </div>
 
             {/* API Key */}
             <div className="rounded-xl border border-[#e7e7f0] bg-white p-4">
