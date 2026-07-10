@@ -10,28 +10,38 @@ import { orgInputToSaved, useOrg } from "@/context/OrgContext";
 
 const BG_GRADIENT =
   "https://www.figma.com/api/mcp/asset/17644fa4-3f60-4b1b-911d-59871832435d";
-const PURPLE_ELLIPSE =
-  "https://www.figma.com/api/mcp/asset/30a6bcc0-3bec-4a64-9447-610c162c975a";
-
-const ALLOWED_EMAIL = "rajesh.kumar@acko.tech";
 
 type Step = "login" | "org-details" | "skills-analysing";
 
+// Users who need the onboarding flow
+const ONBOARDING_USERS = new Set(["rajesh.kumar@acko.tech"]);
+// Users who are pre-onboarded and go straight to dashboard
+const PRE_ONBOARDED_USERS = new Set(["naman.jain@abc.com"]);
+
 export default function Login() {
   const navigate = useNavigate();
-  const { orgs, activeOrgId, addOrg, setActiveOrgId } = useOrg();
+  const { orgs, activeOrgId, addOrg, setActiveOrgId, setCurrentUser, seedNamanOrg } = useOrg();
   const [email, setEmail] = useState("");
   const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [step, setStep] = useState<Step>("login");
 
   function handleLogin() {
-    if (email.trim().toLowerCase() === ALLOWED_EMAIL) {
+    const emailLower = email.trim().toLowerCase();
+    if (PRE_ONBOARDED_USERS.has(emailLower)) {
       setLoginError("");
-      setStep("org-details");
-    } else {
-      setLoginError("You don't have access to this tool.");
+      setCurrentUser(emailLower);
+      seedNamanOrg();
+      navigate("/dashboard");
+      return;
     }
+    if (ONBOARDING_USERS.has(emailLower)) {
+      setLoginError("");
+      setCurrentUser(emailLower);
+      setStep("org-details");
+      return;
+    }
+    setLoginError("You don't have access to this tool.");
   }
 
   function handleSaveOrg(org: Org) {
@@ -159,21 +169,12 @@ export default function Login() {
       </div>
 
       {/* Right Panel — never changes */}
-      <div className="relative flex w-1/2 flex-col items-center justify-center overflow-hidden bg-[#0e0e0e]">
+      <div className="relative w-1/2 overflow-hidden">
         <img
-          src={PURPLE_ELLIPSE}
-          alt=""
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[45%] w-[183%] max-w-none"
+          src="/login-right-panel.png"
+          alt="One Platform for intelligent operations"
+          className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="relative z-10 flex flex-col items-center gap-6 px-12 text-center">
-          <div className="flex flex-col items-center gap-3">
-            <img src="/omni-login-logo.png" alt="ACKO OMNI Forge" className="h-[61px] w-auto" />
-          </div>
-          <p className="max-w-[398px] text-[30px] font-semibold leading-[1.2] text-white">
-            One Platform for intelligent operations
-          </p>
-        </div>
       </div>
     </div>
   );

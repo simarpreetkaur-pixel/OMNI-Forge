@@ -35,6 +35,7 @@ type OrgStore = {
   orgs: SavedOrg[];
   activeOrgId: string | null;
   workspaces: Record<string, OrgWorkspace>;
+  currentUserEmail: string | null;
 };
 
 const STORAGE_KEY = "omni-forge-org-store";
@@ -53,11 +54,12 @@ function loadStore(): OrgStore {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      return { orgs: [], activeOrgId: null, workspaces: {} };
+      return { orgs: [], activeOrgId: null, workspaces: {}, currentUserEmail: null };
     }
-    return JSON.parse(raw) as OrgStore;
+    const parsed = JSON.parse(raw) as OrgStore;
+    return { currentUserEmail: null, ...parsed };
   } catch {
-    return { orgs: [], activeOrgId: null, workspaces: {} };
+    return { orgs: [], activeOrgId: null, workspaces: {}, currentUserEmail: null };
   }
 }
 
@@ -91,8 +93,11 @@ type OrgContextValue = {
   orgs: SavedOrg[];
   activeOrg: SavedOrg | null;
   activeOrgId: string | null;
+  currentUserEmail: string | null;
   addOrg: (org: Omit<SavedOrg, "id">) => string;
   setActiveOrgId: (orgId: string) => void;
+  setCurrentUser: (email: string) => void;
+  seedNamanOrg: () => void;
   getApps: (orgId: string) => AppItem[];
   getMiniApps: (orgId: string) => MiniApp[];
   addApp: (orgId: string, app: AppItem) => void;
@@ -317,9 +322,51 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     if (veFlashTimerRef.current) clearTimeout(veFlashTimerRef.current);
   }, []);
 
+  const setCurrentUser = useCallback((email: string) => {
+    setStore((prev) => ({ ...prev, currentUserEmail: email }));
+  }, []);
+
+  const seedNamanOrg = useCallback(() => {
+    setStore((prev) => {
+      const existing = prev.orgs.find((o) => o.name === "ABC" || o.id === "org-naman-abc");
+      if (existing) {
+        return { ...prev, activeOrgId: existing.id, currentUserEmail: "naman.jain@abc.com" };
+      }
+      const orgId = "org-naman-abc";
+      const workspace: OrgWorkspace = {
+        apps: [
+          { id: "support", name: "Support", description: "AI-powered customer support & sales ops" },
+          { id: "presales", name: "Sales", description: "Automate and accelerate sales workflows" },
+        ],
+        miniApps: [
+          { id: "vitamin-ai", name: "Vitamin-AI", description: "AI-powered health supplement advisor", emoji: "💊" },
+        ],
+        appConfigs: {},
+        configTimestamps: {},
+        virtualEmployees: SEED_VIRTUAL_EMPLOYEES.map((e) => ({ ...e })),
+      };
+      return {
+        orgs: [
+          ...prev.orgs,
+          {
+            id: orgId,
+            name: "ABC",
+            industry: "Healthcare",
+            website: "https://abc.apria.com",
+            logoPreview: "/abc-logo.png",
+            skillsFileName: null,
+          },
+        ],
+        activeOrgId: orgId,
+        workspaces: { ...prev.workspaces, [orgId]: workspace },
+        currentUserEmail: "naman.jain@abc.com",
+      };
+    });
+  }, []);
+
   const clearSession = useCallback(() => {
     sessionStorage.removeItem(STORAGE_KEY);
-    setStore({ orgs: [], activeOrgId: null, workspaces: {} });
+    setStore({ orgs: [], activeOrgId: null, workspaces: {}, currentUserEmail: null });
   }, []);
 
   const activeOrg = useMemo(
@@ -332,8 +379,11 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       orgs: store.orgs,
       activeOrg,
       activeOrgId: store.activeOrgId,
+      currentUserEmail: store.currentUserEmail,
       addOrg,
       setActiveOrgId,
+      setCurrentUser,
+      seedNamanOrg,
       getApps,
       getMiniApps,
       addApp,
@@ -354,9 +404,12 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     [
       store.orgs,
       store.activeOrgId,
+      store.currentUserEmail,
       activeOrg,
       addOrg,
       setActiveOrgId,
+      setCurrentUser,
+      seedNamanOrg,
       getApps,
       getMiniApps,
       addApp,

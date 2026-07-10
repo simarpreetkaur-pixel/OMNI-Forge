@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, MoreHorizontal, Settings, Trash2 } from "lucide-react";
+import { Plus, MoreHorizontal, Settings, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface MiniApp {
@@ -9,6 +9,24 @@ export interface MiniApp {
   emoji: string;
 }
 
+// Pastel badge background colors, cycled by app index
+const BADGE_COLORS = [
+  "#eff6ff", // blue-50
+  "#faf5ff", // purple-50
+  "#fff7ed", // orange-50
+  "#ecfdf5", // emerald-50
+  "#fdf2f8", // pink-50
+  "#fffbeb", // yellow-50
+];
+
+function getBadgeColor(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash << 5) - hash + id.charCodeAt(i);
+  }
+  return BADGE_COLORS[Math.abs(hash) % BADGE_COLORS.length];
+}
+
 interface MiniAppsTabProps {
   myMiniApps: MiniApp[];
   onCreate: () => void;
@@ -16,34 +34,32 @@ interface MiniAppsTabProps {
   isSuperAdmin?: boolean;
 }
 
-export default function MiniAppsTab({ myMiniApps, onCreate, onDeleteMiniApp, isSuperAdmin = false }: MiniAppsTabProps) {
+export default function MiniAppsTab({
+  myMiniApps,
+  onCreate,
+  onDeleteMiniApp,
+  isSuperAdmin = false,
+}: MiniAppsTabProps) {
+  const rows = chunk([...myMiniApps, { id: "__create__", name: "", description: "", emoji: "" }], 3);
+
   return (
-    <div className="flex flex-col animate-fade-in" style={{ gap: 24 }}>
-
-      {/* My mini apps */}
-      {myMiniApps.length > 0 && (
-        <section className="flex flex-col" style={{ gap: 16 }}>
-          <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1, color: "#000" }}>My mini apps</p>
-          <div className="flex flex-wrap" style={{ gap: 20 }}>
-            {myMiniApps.map((app) => (
+    <div className="flex flex-col animate-fade-in" style={{ gap: 20 }}>
+      {rows.map((row, ri) => (
+        <div key={ri} className="flex" style={{ gap: 20 }}>
+          {row.map((item) =>
+            item.id === "__create__" ? (
+              <CreateCard key="create" onClick={onCreate} />
+            ) : (
               <MiniAppCard
-                key={app.id}
-                app={app}
+                key={item.id}
+                app={item}
                 isSuperAdmin={isSuperAdmin}
-                onDelete={() => onDeleteMiniApp(app.id)}
+                onDelete={() => onDeleteMiniApp(item.id)}
               />
-            ))}
-            <CreateCard onClick={onCreate} />
-          </div>
-        </section>
-      )}
-
-      {/* Empty state */}
-      {myMiniApps.length === 0 && (
-        <div className="flex" style={{ gap: 20 }}>
-          <CreateCard onClick={onCreate} />
+            )
+          )}
         </div>
-      )}
+      ))}
     </div>
   );
 }
@@ -59,6 +75,7 @@ function MiniAppCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const bgColor = getBadgeColor(app.id);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -73,68 +90,114 @@ function MiniAppCard({
 
   return (
     <div
-      className="relative flex flex-col items-center justify-center overflow-visible bg-white transition-shadow hover:shadow-md group"
+      className="relative flex flex-col overflow-visible bg-white transition-shadow hover:shadow-md"
       style={{
         width: 302,
-        height: 160,
         border: "1px solid #e7e7f0",
         borderRadius: 12,
-        padding: 16,
-        gap: 8,
+        padding: "20px 16px",
+        gap: 12,
         flexShrink: 0,
       }}
     >
-      {/* 3-dot menu — super admins only */}
-      {isSuperAdmin && (
-        <div ref={menuRef} className="absolute top-2.5 right-2.5 z-10">
-          <button
-            type="button"
-            aria-label="Mini app options"
-            onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
-            className={cn(
-            "flex size-6 items-center justify-center rounded-md text-[#737373] transition-colors",
-              menuOpen && "opacity-100 bg-[#f0f0f0]",
-              "hover:bg-[#f0f0f0]"
-            )}
-          >
-            <MoreHorizontal className="size-4" />
-          </button>
-
-          {menuOpen && (
-            <div className="absolute right-0 top-full z-50 mt-1 w-[160px] overflow-hidden rounded-lg border border-[#e7e7f0] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.10)]">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                }}
-                className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-[#0a0a0a] transition-colors hover:bg-[#f5f5f5]"
-              >
-                <Settings className="size-4 shrink-0 text-[#737373]" strokeWidth={1.5} />
-                Configure
-              </button>
-              <div className="mx-3 h-px bg-[#e7e7f0]" />
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen(false);
-                  onDelete();
-                }}
-                className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-cerise-600 transition-colors hover:bg-cerise-50"
-              >
-                <Trash2 className="size-4 shrink-0" strokeWidth={1.5} />
-                Delete app
-              </button>
-            </div>
-          )}
+      {/* Header row: badge + text + 3-dot */}
+      <div className="flex items-start" style={{ gap: 16 }}>
+        {/* Emoji badge */}
+        <div
+          className="flex shrink-0 items-center justify-center overflow-hidden"
+          style={{ width: 48, height: 48, borderRadius: 14.77, background: bgColor }}
+        >
+          <span style={{ fontSize: 22, lineHeight: 1 }}>{app.emoji}</span>
         </div>
-      )}
 
-      <span style={{ fontSize: 28 }}>{app.emoji}</span>
-      <p style={{ fontSize: 14, fontWeight: 400, lineHeight: 1, color: "#000", whiteSpace: "nowrap" }}>
-        {app.name}
-      </p>
+        {/* Title + description */}
+        <div className="flex min-w-0 flex-1 flex-col" style={{ gap: 8 }}>
+          <p
+            className="truncate"
+            style={{ fontSize: 16, fontWeight: 600, lineHeight: 1, color: "#36354c" }}
+          >
+            {app.name}
+          </p>
+          <p style={{ fontSize: 14, fontWeight: 400, lineHeight: "1.4", color: "#5b5675" }}>
+            {app.description || "Custom mini app"}
+          </p>
+        </div>
+
+        {/* 3-dot kebab — super admins only */}
+        {isSuperAdmin && (
+          <div ref={menuRef} className="relative shrink-0">
+            <button
+              type="button"
+              aria-label="Mini app options"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen((v) => !v);
+              }}
+              className={cn(
+                "flex size-6 items-center justify-center rounded-md text-[#737373] transition-colors",
+                menuOpen ? "bg-[#f0f0f0]" : "hover:bg-[#f0f0f0]"
+              )}
+            >
+              <MoreHorizontal className="size-4" />
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 top-full z-50 mt-1 w-[160px] overflow-hidden rounded-lg border border-[#e7e7f0] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.10)]">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-[#0a0a0a] transition-colors hover:bg-[#f5f5f5]"
+                >
+                  <Settings className="size-4 shrink-0 text-[#737373]" strokeWidth={1.5} />
+                  Configure
+                </button>
+                <div className="mx-3 h-px bg-[#e7e7f0]" />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                    onDelete();
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-[#e11d48] transition-colors hover:bg-[#fff1f2]"
+                >
+                  <RotateCcw className="size-4 shrink-0" strokeWidth={1.5} />
+                  Reset app
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: "#e7e7f0" }} />
+
+      {/* Action row: Open button (right-aligned) */}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          className="flex shrink-0 items-center justify-center transition-opacity hover:opacity-90"
+          style={{
+            height: 32,
+            paddingLeft: 16,
+            paddingRight: 16,
+            borderRadius: 9999,
+            border: "1px solid #8e7cf4",
+            background: "#6841e6",
+            color: "white",
+            fontSize: 12,
+            fontWeight: 500,
+            lineHeight: "16px",
+            cursor: "pointer",
+          }}
+        >
+          Open
+        </button>
+      </div>
     </div>
   );
 }
@@ -144,22 +207,34 @@ function CreateCard({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center justify-center overflow-hidden bg-white transition-all hover:border-purple-400 hover:bg-purple-50"
+      className="flex flex-col items-center justify-center gap-3 bg-white transition-all hover:border-purple-400 hover:bg-purple-50"
       style={{
         width: 302,
-        height: 160,
-        border: "1px dashed #d4d4d4",
+        border: "1.5px dashed #d4d4d4",
         borderRadius: 12,
-        padding: 16,
-        gap: 6,
+        padding: "20px 16px",
         cursor: "pointer",
         flexShrink: 0,
+        minHeight: 130,
       }}
     >
-      <Plus style={{ width: 20, height: 20, color: "#000" }} />
-      <p style={{ fontSize: 14, fontWeight: 400, lineHeight: 1, color: "#000", whiteSpace: "nowrap" }}>
+      <div
+        className="flex items-center justify-center rounded-full bg-[#f5f5f5]"
+        style={{ width: 40, height: 40 }}
+      >
+        <Plus className="size-5 text-[#737373]" strokeWidth={1.75} />
+      </div>
+      <p style={{ fontSize: 14, fontWeight: 500, lineHeight: 1, color: "#0a0a0a" }}>
         Create mini app
       </p>
     </button>
   );
+}
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size));
+  }
+  return result;
 }

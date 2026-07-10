@@ -31,6 +31,20 @@ import {
 import AddOrgModal from "@/components/dashboard/AddOrgModal";
 import { useOrg } from "@/context/OrgContext";
 
+const USER_DISPLAY: Record<string, {
+  name: string; initials: string; email: string; role: string;
+  avatarBg: string; avatarColor: string;
+}> = {
+  "rajesh.kumar@acko.tech": {
+    name: "Rajesh Kumar", initials: "RK", email: "rajesh.kumar@acko.tech",
+    role: "Super admin", avatarBg: "#e8e4f3", avatarColor: "#5b4b8a",
+  },
+  "naman.jain@abc.com": {
+    name: "Naman Jain", initials: "NJ", email: "naman.jain@abc.com",
+    role: "Admin", avatarBg: "#e0f2fe", avatarColor: "#0369a1",
+  },
+};
+
 const WORKFORCE = [
   { id: "virtual-employees", label: "Virtual employees", icon: Bot },
   { id: "human-employees", label: "Human employees", icon: User },
@@ -126,7 +140,8 @@ function NavSection({
 
 export default function Sidebar({ onNavigate }: { onNavigate?: (id: string) => void } = {}) {
   const navigate = useNavigate();
-  const { orgs, activeOrgId, activeOrg, setActiveOrgId, clearSession, recentVeFlash, clearVeFlash } = useOrg();
+  const { orgs, activeOrgId, activeOrg, setActiveOrgId, clearSession, recentVeFlash, clearVeFlash, currentUserEmail } = useOrg();
+  const user = (currentUserEmail && USER_DISPLAY[currentUserEmail]) ?? USER_DISPLAY["rajesh.kumar@acko.tech"];
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [addOrgModalOpen, setAddOrgModalOpen] = useState(false);
@@ -158,7 +173,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: (id: string) => v
         {/* Top nav */}
         <div className="flex w-full flex-col items-start overflow-y-auto">
           {/* Org logo — falls back to ACKO Drive logo */}
-          <div className="mb-2 flex h-[52px] w-full shrink-0 items-center justify-start bg-[#fafafa] px-4 py-2">
+          <div className="mb-2 flex h-[52px] w-full shrink-0 items-center justify-start px-4 py-2">
             {activeOrg?.logoPreview ? (
               <img
                 src={activeOrg.logoPreview}
@@ -250,14 +265,19 @@ export default function Sidebar({ onNavigate }: { onNavigate?: (id: string) => v
           <div className="relative z-[var(--z-dropdown)] flex w-full flex-col items-start gap-3">
             <div className="flex w-full items-start gap-2 rounded-lg px-2 py-1 text-left">
               {/* Avatar */}
-              <div className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e8e4f3]">
-                <span className="text-[11px] font-semibold text-[#5b4b8a]">RK</span>
+              <div
+                className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full"
+                style={{ background: user.avatarBg }}
+              >
+                <span className="text-[11px] font-semibold" style={{ color: user.avatarColor }}>
+                  {user.initials}
+                </span>
               </div>
 
               {/* Name / email / badge */}
               <div className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
                 <p className="w-full truncate text-[14px] font-semibold leading-none text-[#0a0a0a]">
-                  Rajesh Kumar
+                  {user.name}
                 </p>
                 {activeOrg && (
                   <p className="w-full truncate text-[14px] font-normal leading-none text-[#0a0a0a]">
@@ -265,10 +285,10 @@ export default function Sidebar({ onNavigate }: { onNavigate?: (id: string) => v
                   </p>
                 )}
                 <p className="w-full truncate text-[14px] font-normal leading-none text-[#737373]">
-                  rajesh.kumar@acko.tech
+                  {user.email}
                 </p>
                 <span className="my-1 inline-flex w-fit items-center rounded-full bg-green-50 px-2.5 py-1 text-[14px] font-normal leading-none text-green-600">
-                  Super admin
+                  {user.role}
                 </span>
               </div>
 

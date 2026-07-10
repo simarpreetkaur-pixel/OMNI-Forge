@@ -107,6 +107,25 @@ export default function Dashboard() {
     goToSeoConfig(app, existing);
   }
 
+  function handleOpenChannel(channelId: string) {
+    const appId = `media-${channelId}`;
+    const app = myApps.find((a) => a.id === appId) ?? {
+      id: appId,
+      name: `Media · ${channelId.toUpperCase()}`,
+      description: "AI-powered SEO content automation",
+    };
+    setSelectedApp(app);
+    setSelectedChannel(channelId);
+    setView("seo-articles");
+  }
+
+  function handleResetChannel(channelId: string) {
+    const appId = `media-${channelId}`;
+    if (activeOrgId) {
+      removeApp(activeOrgId, appId);
+    }
+  }
+
   function handleAppSave(app: AppItem) {
     if (activeOrgId) {
       addApp(activeOrgId, app);
@@ -136,12 +155,19 @@ export default function Dashboard() {
   }
 
   if (view === "media-channel-picker") {
+    const configuredChannels = myApps
+      .filter((a) => a.id.startsWith("media-"))
+      .map((a) => a.id.replace("media-", ""));
     return (
       <div className="flex h-screen w-screen overflow-hidden bg-[#fafafa]">
         <Sidebar onNavigate={(id) => { setSidebarSection(id); setView("dashboard"); }} />
         <MediaChannelPicker
           onBack={() => setView("dashboard")}
           onSelectChannel={handleSelectChannel}
+          onOpenChannel={handleOpenChannel}
+          onResetChannel={handleResetChannel}
+          configuredChannels={configuredChannels}
+          isSuperAdmin={IS_SUPER_ADMIN}
         />
       </div>
     );
@@ -187,6 +213,7 @@ export default function Dashboard() {
         <Sidebar onNavigate={(id) => { setSidebarSection(id); setView("dashboard"); }} />
         <AppConfigPage
           app={selectedApp}
+          isAlreadySaved={myApps.some((a) => a.id === selectedApp.id)}
           onBack={() => { setView("dashboard"); setSelectedApp(null); }}
           onSave={() => handleAppSave(selectedApp)}
         />
@@ -225,7 +252,7 @@ export default function Dashboard() {
       ) : (
         <main
           className="relative flex-1 overflow-y-auto"
-          style={{ paddingTop: 40, paddingLeft: 27, paddingRight: 40, paddingBottom: 40 }}
+          style={{ paddingTop: 40, paddingLeft: 24, paddingRight: 24, paddingBottom: 40 }}
         >
           <div className="flex flex-col" style={{ gap: 4, marginBottom: 30 }}>
             <p
@@ -246,7 +273,7 @@ export default function Dashboard() {
             style={{
               width: 375,
               height: 44,
-              background: "#fafafa",
+              background: "rgba(255, 255, 255, 1)",
               padding: 3,
               borderRadius: 10,
               marginBottom: 32,
