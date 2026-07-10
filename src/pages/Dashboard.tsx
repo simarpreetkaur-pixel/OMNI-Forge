@@ -33,6 +33,7 @@ export default function Dashboard() {
   const {
     activeOrgId,
     activeOrg,
+    currentUserEmail,
     getApps,
     getMiniApps,
     addApp,
@@ -42,6 +43,11 @@ export default function Dashboard() {
     getAppConfig,
     getConfigTimestamp,
   } = useOrg();
+
+  // Derive first name from email prefix, e.g. "naman.jain@abc.com" → "Naman"
+  const firstName = currentUserEmail
+    ? currentUserEmail.split("@")[0].split(".")[0].replace(/^./, (c) => c.toUpperCase())
+    : "Rajesh";
 
   const IS_SUPER_ADMIN = true;
   const [view, setView] = useState<View>("dashboard");
@@ -259,7 +265,7 @@ export default function Dashboard() {
               className="font-semibold text-[#0a0a0a]"
               style={{ fontSize: 24, lineHeight: "32px", letterSpacing: "-0.4px" }}
             >
-              Welcome, Rajesh
+              Welcome, {firstName}
             </p>
             <p className="font-normal text-[#737373]" style={{ fontSize: 16, lineHeight: "24px" }}>
               {activeOrg

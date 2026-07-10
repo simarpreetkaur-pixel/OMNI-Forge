@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   ArrowLeft, ChevronRight, ChevronDown, Send, Check, RefreshCw,
   TrendingUp, Activity, BarChart2, Zap, Star, Bell,
+  Users, Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/context/ToastContext";
@@ -180,6 +182,187 @@ function SkeletonPane() {
   );
 }
 
+// ─── Publish target ───────────────────────────────────────────────────────────
+
+const TEAMS = [
+  "Customer Support",
+  "Sales",
+  "Marketing",
+  "Engineering",
+  "HR & Operations",
+  "Finance",
+];
+
+type PublishTarget = "company" | "teams";
+
+interface PublishDropdownProps {
+  disabled: boolean;
+  publishing: boolean;
+  onConfirm: (target: PublishTarget, teams: string[]) => void;
+}
+
+function PublishDropdown({ disabled, publishing, onConfirm }: PublishDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const [target, setTarget] = useState<PublishTarget>("company");
+  const [selectedTeams, setSelectedTeams] = useState<Set<string>>(new Set());
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [open]);
+
+  function toggleTeam(team: string) {
+    setSelectedTeams((prev) => {
+      const next = new Set(prev);
+      next.has(team) ? next.delete(team) : next.add(team);
+      return next;
+    });
+  }
+
+  const canPublish = target === "company" || selectedTeams.size > 0;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        disabled={disabled || publishing}
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 rounded-lg bg-purple-600 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {publishing ? (
+          <>
+            <RefreshCw className="size-3.5 shrink-0 animate-spin" strokeWidth={2} />
+            Publishing…
+          </>
+        ) : (
+          <>
+            <Check className="size-3.5 shrink-0" strokeWidth={2.5} />
+            Publish
+            <ChevronDown className={cn("size-3.5 shrink-0 transition-transform", open && "rotate-180")} />
+          </>
+        )}
+      </button>
+
+      {open && createPortal(
+        <div
+          className="fixed inset-0 z-[9998]"
+          onMouseDown={() => setOpen(false)}
+        >
+          <div
+            className="absolute bg-white rounded-xl border border-[#e7e7f0] shadow-[0_8px_32px_rgba(0,0,0,0.14)]"
+            style={{ top: ref.current ? ref.current.getBoundingClientRect().bottom + 8 : 0, right: window.innerWidth - (ref.current ? ref.current.getBoundingClientRect().right : 0), width: 280 }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-4 pt-4 pb-3 border-b border-[#f0f0f0]">
+              <p className="text-[13px] font-semibold text-[#0a0a0a]">Publish to</p>
+              <p className="text-[11px] text-[#737373] mt-0.5">Choose who can access this mini app</p>
+            </div>
+
+            {/* Options */}
+            <div className="px-3 py-3 flex flex-col gap-1">
+              {/* Entire company */}
+              <button
+                type="button"
+                onClick={() => setTarget("company")}
+                className={cn(
+                  "flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-left transition-colors",
+                  target === "company" ? "bg-purple-50" : "hover:bg-[#f5f5f5]"
+                )}
+              >
+                <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", target === "company" ? "bg-purple-100" : "bg-[#f0f0f0]")}>
+                  <Building2 className={cn("size-4", target === "company" ? "text-purple-600" : "text-[#737373]")} strokeWidth={1.75} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={cn("text-[13px] font-medium", target === "company" ? "text-purple-700" : "text-[#0a0a0a]")}>Entire Company</p>
+                  <p className="text-[11px] text-[#737373]">All teams and employees</p>
+                </div>
+                <div className={cn("size-4 rounded-full border-2 shrink-0 flex items-center justify-center", target === "company" ? "border-purple-600 bg-purple-600" : "border-[#d4d4d4]")}>
+                  {target === "company" && <div className="size-1.5 rounded-full bg-white" />}
+                </div>
+              </button>
+
+              {/* Specific teams */}
+              <button
+                type="button"
+                onClick={() => setTarget("teams")}
+                className={cn(
+                  "flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-left transition-colors",
+                  target === "teams" ? "bg-purple-50" : "hover:bg-[#f5f5f5]"
+                )}
+              >
+                <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", target === "teams" ? "bg-purple-100" : "bg-[#f0f0f0]")}>
+                  <Users className={cn("size-4", target === "teams" ? "text-purple-600" : "text-[#737373]")} strokeWidth={1.75} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={cn("text-[13px] font-medium", target === "teams" ? "text-purple-700" : "text-[#0a0a0a]")}>Specific Teams</p>
+                  <p className="text-[11px] text-[#737373]">Select which teams get access</p>
+                </div>
+                <div className={cn("size-4 rounded-full border-2 shrink-0 flex items-center justify-center", target === "teams" ? "border-purple-600 bg-purple-600" : "border-[#d4d4d4]")}>
+                  {target === "teams" && <div className="size-1.5 rounded-full bg-white" />}
+                </div>
+              </button>
+            </div>
+
+            {/* Team selector — visible only when "Specific Teams" is chosen */}
+            {target === "teams" && (
+              <div className="px-3 pb-3">
+                <div className="rounded-lg border border-[#e7e7f0] overflow-hidden">
+                  {TEAMS.map((team, i) => (
+                    <label
+                      key={team}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors hover:bg-[#f5f5f5]",
+                        i < TEAMS.length - 1 && "border-b border-[#f0f0f0]"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "flex size-4 shrink-0 items-center justify-center rounded border-2 transition-colors",
+                          selectedTeams.has(team) ? "border-purple-600 bg-purple-600" : "border-[#d4d4d4] bg-white"
+                        )}
+                        onClick={() => toggleTeam(team)}
+                      >
+                        {selectedTeams.has(team) && <Check className="size-2.5 text-white" strokeWidth={3} />}
+                      </div>
+                      <span className="text-[13px] text-[#0a0a0a] flex-1" onClick={() => toggleTeam(team)}>{team}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Confirm */}
+            <div className="px-4 pb-4">
+              <button
+                type="button"
+                disabled={!canPublish}
+                onClick={() => {
+                  setOpen(false);
+                  onConfirm(target, Array.from(selectedTeams));
+                }}
+                className="w-full rounded-lg bg-purple-600 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {target === "company"
+                  ? "Publish to Entire Company"
+                  : selectedTeams.size === 0
+                  ? "Select at least one team"
+                  : `Publish to ${selectedTeams.size} team${selectedTeams.size > 1 ? "s" : ""}`}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 interface MiniAppBuilderProps {
@@ -229,7 +412,7 @@ export default function MiniAppBuilder({ onBack, onPublish }: MiniAppBuilderProp
     }, index === 0 ? 400 : 680);
   }
 
-  function handlePublish() {
+  function handlePublish(target: "company" | "teams", teams: string[]) {
     if (publishing) return;
     setPublishing(true);
     setTimeout(() => {
@@ -239,7 +422,10 @@ export default function MiniAppBuilder({ onBack, onPublish }: MiniAppBuilderProp
         description: submittedPrompt.slice(0, 80),
         emoji: appEmoji,
       });
-      showSuccessToast(`${appName} published to My Mini Apps`);
+      const scope = target === "company"
+        ? "entire company"
+        : teams.length === 1 ? teams[0] : `${teams.length} teams`;
+      showSuccessToast(`${appName} published to ${scope}`);
     }, 800);
   }
 
@@ -378,34 +564,11 @@ export default function MiniAppBuilder({ onBack, onPublish }: MiniAppBuilderProp
             )}
           </div>
           <div className="flex items-center gap-2">
-            {state === "preview" && (
-              <button
-                type="button"
-                onClick={() => setState("idle")}
-                className="flex items-center gap-1.5 rounded-lg border border-[#e5e5e5] bg-white px-3 py-2 text-[12px] font-medium text-[#737373] transition-colors hover:bg-[#f5f5f5]"
-              >
-                <RefreshCw className="size-3.5 shrink-0" strokeWidth={1.5} />
-                Rebuild
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handlePublish}
-              disabled={state !== "preview" || publishing}
-              className="flex items-center gap-1.5 rounded-lg bg-purple-600 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {publishing ? (
-                <>
-                  <RefreshCw className="size-3.5 shrink-0 animate-spin" strokeWidth={2} />
-                  Publishing…
-                </>
-              ) : (
-                <>
-                  <Check className="size-3.5 shrink-0" strokeWidth={2.5} />
-                  Publish
-                </>
-              )}
-            </button>
+            <PublishDropdown
+              disabled={state !== "preview"}
+              publishing={publishing}
+              onConfirm={handlePublish}
+            />
           </div>
         </div>
 

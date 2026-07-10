@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   MoreHorizontal, Settings, Trash2, Check,
   Headphones, TrendingUp, Video, BarChart2, AlertTriangle, Cog,
@@ -92,6 +93,64 @@ export default function AppsTab({
   );
 }
 
+function DeleteConfirmModal({
+  appName,
+  onCancel,
+  onConfirm,
+}: {
+  appName: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      style={{ background: "rgba(0,0,0,0.45)" }}
+      onMouseDown={(e) => { e.stopPropagation(); onCancel(); }}
+    >
+      <div
+        className="flex flex-col bg-white"
+        style={{ borderRadius: 16, padding: "28px 28px 24px", width: 380, gap: 8, boxShadow: "0 8px 32px rgba(0,0,0,0.16)" }}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div
+          className="flex items-center justify-center"
+          style={{ width: 44, height: 44, borderRadius: 12, background: "#fff1f2", marginBottom: 4 }}
+        >
+          <Trash2 className="size-5 text-[#e11d48]" strokeWidth={1.75} />
+        </div>
+
+        <p style={{ fontSize: 16, fontWeight: 600, color: "#0a0a0a", lineHeight: 1.3, margin: 0 }}>
+          Delete {appName}?
+        </p>
+        <p style={{ fontSize: 14, color: "#737373", lineHeight: 1.5, margin: 0 }}>
+          This will permanently remove the app and all its configuration. This action cannot be undone.
+        </p>
+
+        <div className="flex items-center justify-end" style={{ gap: 8, marginTop: 16 }}>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex items-center justify-center transition-colors hover:bg-[#f5f5f5]"
+            style={{ height: 36, paddingLeft: 16, paddingRight: 16, borderRadius: 8, border: "1px solid #e5e5e5", background: "white", fontSize: 14, fontWeight: 500, color: "#0a0a0a", cursor: "pointer" }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex items-center justify-center transition-opacity hover:opacity-90"
+            style={{ height: 36, paddingLeft: 16, paddingRight: 16, borderRadius: 8, background: "#e11d48", fontSize: 14, fontWeight: 500, color: "white", cursor: "pointer", border: "none" }}
+          >
+            Delete app
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function AppCard({
   app,
   appType,
@@ -112,6 +171,7 @@ function AppCard({
   onReset: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const iconInfo = APP_ICON_INFO[app.id];
 
@@ -176,17 +236,25 @@ function AppCard({
                   onClick={(e) => {
                     e.stopPropagation();
                     setMenuOpen(false);
-                    onReset();
+                    setConfirmDelete(true);
                   }}
                   className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-[#e11d48] transition-colors hover:bg-[#fff1f2]"
                 >
                   <Trash2 className="size-4 shrink-0" strokeWidth={1.5} />
-                  Delete &amp; Reset app
+                  Delete app
                 </button>
               </div>
             )}
           </div>
         )}
+
+      {confirmDelete && (
+        <DeleteConfirmModal
+          appName={app.name}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() => { setConfirmDelete(false); onReset(); }}
+        />
+      )}
 
       {/* Header row: badge + text (no 3-dot here — keeps full width for description) */}
       <div className="flex items-start" style={{ gap: 16 }}>

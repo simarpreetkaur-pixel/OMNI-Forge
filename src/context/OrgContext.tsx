@@ -330,6 +330,25 @@ export function OrgProvider({ children }: { children: ReactNode }) {
     setStore((prev) => {
       const existing = prev.orgs.find((o) => o.name === "ABC" || o.id === "org-naman-abc");
       if (existing) {
+        // Patch in media-seo if it wasn't in the original seed
+        const ws = prev.workspaces[existing.id];
+        if (ws && !ws.apps.some((a) => a.id === "media-seo")) {
+          return {
+            ...prev,
+            activeOrgId: existing.id,
+            currentUserEmail: "naman.jain@abc.com",
+            workspaces: {
+              ...prev.workspaces,
+              [existing.id]: {
+                ...ws,
+                apps: [
+                  ...ws.apps,
+                  { id: "media-seo", name: "SEO", description: "AI-written articles optimised for search ranking" },
+                ],
+              },
+            },
+          };
+        }
         return { ...prev, activeOrgId: existing.id, currentUserEmail: "naman.jain@abc.com" };
       }
       const orgId = "org-naman-abc";
@@ -337,9 +356,10 @@ export function OrgProvider({ children }: { children: ReactNode }) {
         apps: [
           { id: "support", name: "Support", description: "AI-powered customer support & sales ops" },
           { id: "presales", name: "Sales", description: "Automate and accelerate sales workflows" },
+          { id: "media-seo", name: "SEO", description: "AI-written articles optimised for search ranking" },
         ],
         miniApps: [
-          { id: "vitamin-ai", name: "Vitamin-AI", description: "AI-powered health supplement advisor", emoji: "💊" },
+          { id: "vitamin-ai", name: "Vitamin-AI", description: "Daily AI dosage for working professionals", emoji: "💊" },
         ],
         appConfigs: {},
         configTimestamps: {},
