@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, MoreHorizontal, Settings, RotateCcw } from "lucide-react";
+import { Plus, MoreHorizontal, Settings, Trash2, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface MiniApp {
@@ -40,26 +40,24 @@ export default function MiniAppsTab({
   onDeleteMiniApp,
   isSuperAdmin = false,
 }: MiniAppsTabProps) {
-  const rows = chunk([...myMiniApps, { id: "__create__", name: "", description: "", emoji: "" }], 3);
-
   return (
-    <div className="flex flex-col animate-fade-in" style={{ gap: 20 }}>
-      {rows.map((row, ri) => (
-        <div key={ri} className="flex" style={{ gap: 20 }}>
-          {row.map((item) =>
-            item.id === "__create__" ? (
-              <CreateCard key="create" onClick={onCreate} />
-            ) : (
-              <MiniAppCard
-                key={item.id}
-                app={item}
-                isSuperAdmin={isSuperAdmin}
-                onDelete={() => onDeleteMiniApp(item.id)}
-              />
-            )
-          )}
-        </div>
+    <div
+      className="animate-fade-in"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(3, 1fr)",
+        gap: 20,
+      }}
+    >
+      {myMiniApps.map((item) => (
+        <MiniAppCard
+          key={item.id}
+          app={item}
+          isSuperAdmin={isSuperAdmin}
+          onDelete={() => onDeleteMiniApp(item.id)}
+        />
       ))}
+      <CreateCard onClick={onCreate} />
     </div>
   );
 }
@@ -92,12 +90,10 @@ function MiniAppCard({
     <div
       className="relative flex flex-col overflow-visible bg-white transition-shadow hover:shadow-md"
       style={{
-        width: 302,
         border: "1px solid #e7e7f0",
         borderRadius: 12,
         padding: "20px 16px",
         gap: 12,
-        flexShrink: 0,
       }}
     >
       {/* Header row: badge + text + 3-dot */}
@@ -164,8 +160,8 @@ function MiniAppCard({
                   }}
                   className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-[#e11d48] transition-colors hover:bg-[#fff1f2]"
                 >
-                  <RotateCcw className="size-4 shrink-0" strokeWidth={1.5} />
-                  Reset app
+                  <Trash2 className="size-4 shrink-0" strokeWidth={1.5} />
+                  Delete
                 </button>
               </div>
             )}
@@ -209,12 +205,10 @@ function CreateCard({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       className="flex flex-col items-center justify-center gap-3 bg-white transition-all hover:border-purple-400 hover:bg-purple-50"
       style={{
-        width: 302,
         border: "1.5px dashed #d4d4d4",
         borderRadius: 12,
         padding: "20px 16px",
         cursor: "pointer",
-        flexShrink: 0,
         minHeight: 130,
       }}
     >
@@ -231,10 +225,3 @@ function CreateCard({ onClick }: { onClick: () => void }) {
   );
 }
 
-function chunk<T>(arr: T[], size: number): T[][] {
-  const result: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) {
-    result.push(arr.slice(i, i + size));
-  }
-  return result;
-}

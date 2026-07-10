@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   ArrowLeft, ChevronRight, Search, Instagram, Linkedin, Twitter,
-  MoreHorizontal, Settings, RotateCcw, Check,
+  MoreHorizontal, Settings, Trash2, Check,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -159,8 +159,8 @@ function ChannelCard({
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-[#e11d48] transition-colors hover:bg-[#fff1f2]"
               >
-                <RotateCcw className="size-4 shrink-0" strokeWidth={1.5} />
-                Reset app
+                <Trash2 className="size-4 shrink-0" strokeWidth={1.5} />
+                Delete &amp; Reset app
               </button>
             </div>
           )}

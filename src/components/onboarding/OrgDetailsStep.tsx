@@ -185,6 +185,7 @@ export default function OrgDetailsStep({ orgs, onSaveOrg, onContinue, variant = 
               placeholder="e.g. ACKO General Insurance"
               value={form.name}
               onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); setErrors((er) => ({ ...er, name: undefined })); }}
+              onFocus={() => { if (!form.name) { setForm((f) => ({ ...f, name: "ACKO General Insurance" })); setErrors((er) => ({ ...er, name: undefined })); } }}
               className="h-9 rounded-md border-[#e5e5e5] bg-white px-3 text-sm placeholder:text-[#737373]"
             />
             {errors.name && <p className="text-xs text-cerise-600">{errors.name}</p>}
@@ -198,7 +199,16 @@ export default function OrgDetailsStep({ orgs, onSaveOrg, onContinue, variant = 
             <div className="relative">
               <button
                 type="button"
-                onClick={() => { setIndustryOpen((o) => !o); setErrors((er) => ({ ...er, industry: undefined })); }}
+                onClick={() => {
+                  if (!form.industry) {
+                    // Demo prefill: auto-select on first click
+                    setForm((f) => ({ ...f, industry: "Insurance" }));
+                    setErrors((er) => ({ ...er, industry: undefined }));
+                    return;
+                  }
+                  setIndustryOpen((o) => !o);
+                  setErrors((er) => ({ ...er, industry: undefined }));
+                }}
                 className={[
                   "flex h-9 w-full items-center justify-between rounded-md border bg-white px-3 text-sm transition-colors",
                   errors.industry
@@ -251,6 +261,7 @@ export default function OrgDetailsStep({ orgs, onSaveOrg, onContinue, variant = 
               placeholder="https://acko.com"
               value={form.website}
               onChange={(e) => { setForm((f) => ({ ...f, website: e.target.value })); setErrors((er) => ({ ...er, website: undefined })); }}
+              onFocus={() => { if (!form.website) setForm((f) => ({ ...f, website: "https://acko.com" })); }}
               className="h-9 rounded-md border-[#e5e5e5] bg-white px-3 text-sm placeholder:text-[#737373]"
             />
             {errors.website && <p className="text-xs text-cerise-600">{errors.website}</p>}
@@ -260,7 +271,15 @@ export default function OrgDetailsStep({ orgs, onSaveOrg, onContinue, variant = 
           <div className="flex flex-col gap-1.5">
             <Label className="text-sm font-medium text-[#0a0a0a]">Brand Logo</Label>
             <div
-              onClick={() => logoRef.current?.click()}
+              onClick={() => {
+                if (!form.logoPreview) {
+                  // Demo prefill: load the Acko logo without opening the file picker
+                  const fakeFile = new File([""], "acko-drive-logo.png", { type: "image/png" });
+                  setForm((f) => ({ ...f, logo: fakeFile, logoPreview: "/acko-drive-logo.png" }));
+                } else {
+                  logoRef.current?.click();
+                }
+              }}
               className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#d4d4d4] bg-white px-3 py-2.5 transition-colors hover:border-purple-400 hover:bg-purple-100/30"
             >
               {form.logoPreview ? (
@@ -292,7 +311,17 @@ export default function OrgDetailsStep({ orgs, onSaveOrg, onContinue, variant = 
               Company Knowledge Document <span className="text-cerise-600">*</span>
             </Label>
             <div
-              onClick={() => skillsRef.current?.click()}
+              onClick={() => {
+                if (!form.skillsFile) {
+                  // Demo prefill: create a synthetic knowledge document
+                  const content = "# ACKO General Insurance — Company Knowledge Base\n\nProducts: Car Insurance, Bike Insurance, Health Insurance, Travel Insurance.\nClaims: Digital-first process via app or website.\nSupport: 24/7 via phone, WhatsApp, and chat.\n";
+                  const fakeFile = new File([content], "acko-knowledge-base.pdf", { type: "application/pdf" });
+                  setForm((f) => ({ ...f, skillsFile: fakeFile }));
+                  setErrors((er) => ({ ...er, skillsFile: undefined }));
+                } else {
+                  skillsRef.current?.click();
+                }
+              }}
               className={[
                 "flex cursor-pointer items-center gap-3 rounded-lg border border-dashed px-3 py-2.5 transition-colors",
                 form.skillsFile

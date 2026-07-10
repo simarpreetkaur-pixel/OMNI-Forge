@@ -169,12 +169,40 @@ export default function Login() {
       </div>
 
       {/* Right Panel — never changes */}
-      <div className="relative w-1/2 overflow-hidden">
+      <div className="relative w-1/2 overflow-hidden bg-[#06000F]">
+        {/* Dark purple gradient background */}
         <img
-          src="/login-right-panel.png"
-          alt="One Platform for intelligent operations"
+          src="/login-panel-bg.png"
+          alt=""
+          aria-hidden
           className="absolute inset-0 h-full w-full object-cover"
         />
+
+        {/* Content: centered vertically and horizontally */}
+        <div className="relative z-10 flex h-full flex-col items-center justify-center" style={{ gap: 16 }}>
+
+          {/* Logo — natural aspect ratio, sized to show icon + ACKO + OMNI */}
+          <img
+            src="/login-logo.png"
+            alt="ACKO OMNI"
+            style={{ height: 68, width: "auto", objectFit: "contain" }}
+          />
+
+          {/* Heading — wraps "One Platform for intelligent" / "operations" */}
+          <p
+            style={{
+              fontSize: 30,
+              fontWeight: 700,
+              color: "#ffffff",
+              textAlign: "center",
+              lineHeight: "1.3",
+              maxWidth: 460,
+              margin: 0,
+            }}
+          >
+            One Platform for intelligent operations
+          </p>
+        </div>
       </div>
     </div>
   );

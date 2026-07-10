@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import {
-  MoreHorizontal, Settings, RotateCcw, Check,
+  MoreHorizontal, Settings, Trash2, Check,
   Headphones, TrendingUp, Video, BarChart2, AlertTriangle, Cog,
   type LucideIcon,
 } from "lucide-react";
@@ -132,8 +132,6 @@ function AppCard({
     <div
       className="relative flex flex-col overflow-visible bg-white transition-shadow hover:shadow-md"
       style={{
-        width: 302,
-        flexShrink: 0,
         border: "1px solid #e7e7f0",
         borderRadius: 12,
         padding: "20px 16px",
@@ -182,8 +180,8 @@ function AppCard({
                   }}
                   className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-[#e11d48] transition-colors hover:bg-[#fff1f2]"
                 >
-                  <RotateCcw className="size-4 shrink-0" strokeWidth={1.5} />
-                  Reset app
+                  <Trash2 className="size-4 shrink-0" strokeWidth={1.5} />
+                  Delete &amp; Reset app
                 </button>
               </div>
             )}
