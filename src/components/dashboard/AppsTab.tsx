@@ -24,6 +24,11 @@ const APP_TYPE: Record<string, AppType> = {
   "marketing-os": "single",
 };
 
+// URL opened when clicking "Open" on a configured app (app-id → external URL)
+const APP_OPEN_URLS: Record<string, string> = {
+  presales: "https://simarpreetkaur-pixel.github.io/OMNI-Presales-Design/",
+};
+
 // All apps use a Lucide icon for pixel-perfect size consistency
 const APP_ICON_INFO: Record<string, { Icon: LucideIcon; iconColor: string; bg: string }> = {
   support:       { Icon: Headphones,    iconColor: "#3b82f6", bg: "#eff6ff" },
@@ -310,7 +315,17 @@ function AppCard({
       ) : isConfigured ? (
         // Single-type configured: primary Open button (right-aligned)
         <div className="flex justify-end">
-          <PrimaryButton label="Open" onClick={onOpen} />
+          <PrimaryButton
+            label="Open"
+            onClick={() => {
+              const externalUrl = APP_OPEN_URLS[app.id];
+              if (externalUrl) {
+                window.open(externalUrl, "_blank", "noopener,noreferrer");
+              } else {
+                onOpen();
+              }
+            }}
+          />
         </div>
       ) : (
         // Single-type not configured: secondary Configure button (right-aligned), no 3-dot

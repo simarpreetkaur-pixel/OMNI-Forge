@@ -7,6 +7,7 @@ import MiniAppBuilder from "@/components/dashboard/MiniAppBuilder";
 import MediaChannelPicker from "@/components/dashboard/MediaChannelPicker";
 import SeoConfigPage from "@/components/dashboard/SeoConfigPage";
 import SeoArticlesView from "@/components/dashboard/SeoArticlesView";
+import SalesConfigPage from "@/components/dashboard/SalesConfigPage";
 import VirtualEmployeesPage from "@/components/dashboard/VirtualEmployeesPage";
 import HumanEmployeesPage from "@/components/dashboard/HumanEmployeesPage";
 import TeamsPage from "@/components/dashboard/TeamsPage";
@@ -17,6 +18,7 @@ import type { SeoConfig } from "@/types/seo";
 type View =
   | "dashboard"
   | "app-config"
+  | "sales-config"
   | "mini-app-builder"
   | "media-channel-picker"
   | "seo-config"
@@ -87,6 +89,10 @@ export default function Dashboard() {
       setView("seo-articles");
       return;
     }
+    // Sales app: Open button is handled in AppsTab via window.open — nothing to do here
+    if (app.id === "presales") {
+      return;
+    }
     setSelectedApp(app);
     setView("app-config");
   }
@@ -95,6 +101,11 @@ export default function Dashboard() {
     if (app.id.startsWith("media-")) {
       const existing = activeOrgId ? getAppConfig(activeOrgId, app.id) : null;
       goToSeoConfig(app, existing);
+      return;
+    }
+    if (app.id === "presales") {
+      setSelectedApp(app);
+      setView("sales-config");
       return;
     }
     setSelectedApp(app);
@@ -208,6 +219,24 @@ export default function Dashboard() {
           }
           appName={selectedApp.name}
           isAlreadySaved={myApps.some((a) => a.id === selectedApp.id)}
+        />
+      </div>
+    );
+  }
+
+  if (view === "sales-config" && activeOrgId) {
+    const existingSalesConfig = getAppConfig(activeOrgId, "presales");
+    const existingTimestamp = getConfigTimestamp(activeOrgId, "presales");
+    return (
+      <div className="flex h-screen w-screen overflow-hidden bg-[#fafafa]">
+        <Sidebar onNavigate={(id) => { setSidebarSection(id); setView("dashboard"); }} />
+        <SalesConfigPage
+          orgId={activeOrgId}
+          appId="presales"
+          onBack={() => { setView("dashboard"); setSelectedApp(null); }}
+          initialConfig={existingSalesConfig as never}
+          initialTimestamp={existingTimestamp}
+          isAlreadySaved={myApps.some((a) => a.id === "presales")}
         />
       </div>
     );

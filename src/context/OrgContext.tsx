@@ -12,6 +12,7 @@ import type { AppItem } from "@/components/dashboard/AppsTab";
 import type { MiniApp } from "@/components/dashboard/MiniAppsTab";
 import type { Org } from "@/components/onboarding/OrgDetailsStep";
 import type { SeoConfig } from "@/types/seo";
+import type { SalesConfig } from "@/types/sales";
 import { type VirtualEmployee, SEED_VIRTUAL_EMPLOYEES } from "@/types/virtualEmployee";
 
 export type SavedOrg = {
@@ -26,7 +27,7 @@ export type SavedOrg = {
 type OrgWorkspace = {
   apps: AppItem[];
   miniApps: MiniApp[];
-  appConfigs: Record<string, SeoConfig>;
+  appConfigs: Record<string, SeoConfig | SalesConfig>;
   configTimestamps: Record<string, number>;
   virtualEmployees: VirtualEmployee[];
 };
