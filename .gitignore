@@ -1,1 +1,5 @@
 node_modules
+.tmp-presales
+dist
+.DS_Store
+*.local
