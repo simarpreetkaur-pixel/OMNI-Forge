@@ -391,6 +391,7 @@ export default function SalesConfigPage({
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   const [newCampaignName, setNewCampaignName] = useState("");
   const [newCampaignDesc, setNewCampaignDesc] = useState("");
+  const [showAddCampaignForm, setShowAddCampaignForm] = useState(false);
   const [newPowerToolName, setNewPowerToolName] = useState("");
   const [newPowerToolUrl, setNewPowerToolUrl] = useState("");
   const [newPowerToolDesc, setNewPowerToolDesc] = useState("");
@@ -472,6 +473,7 @@ export default function SalesConfigPage({
     setSelectedCampaignId(id);
     setNewCampaignName("");
     setNewCampaignDesc("");
+    setShowAddCampaignForm(false);
   }
 
   function deleteCampaign(id: string) {
@@ -548,10 +550,10 @@ export default function SalesConfigPage({
         {/* ── Config pane ─────────────────────────────────────────────────── */}
         <div className="flex flex-[65] flex-col overflow-hidden border-r border-[#e7e7f0]">
 
-          {/* Campaign selector bar */}
+          {/* Campaign selector bar — shown once at least one campaign exists */}
           {hasCampaigns && (
             <div className="flex shrink-0 items-center gap-2 border-b border-[#e7e7f0] bg-white px-4 py-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#a0a0a0] shrink-0">Campaign</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#a0a0a0] shrink-0">Viewing</span>
               <div className="flex flex-1 flex-wrap gap-1.5">
                 {config.campaigns.map((c) => (
                   <button key={c.id} type="button"
@@ -570,41 +572,9 @@ export default function SalesConfigPage({
             </div>
           )}
 
-          {/* No campaigns empty state */}
-          {!hasCampaigns ? (
-            <div className="flex flex-1 items-center justify-center">
-              <div className="flex flex-col items-center gap-5 text-center max-w-[400px]">
-                <div className="flex size-14 items-center justify-center rounded-2xl bg-purple-50">
-                  <Tag className="size-6 text-purple-600" strokeWidth={1.5} />
-                </div>
-                <div>
-                  <p className="text-[15px] font-semibold text-[#0a0a0a]">Create your first campaign type</p>
-                  <p className="mt-1 text-[13px] leading-[1.6] text-[#737373]">Campaigns are the different use cases for your sales team — like Fresh Lead, Renewal, or Winback. All other configuration (scripts, data panels, opening context) is set per campaign.</p>
-                </div>
-                <div className="w-full flex flex-col gap-2">
-                  <input type="text" autoFocus value={newCampaignName}
-                    onChange={(e) => setNewCampaignName(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") createCampaign(); }}
-                    placeholder="Campaign name — e.g. Fresh Lead, Renewal…"
-                    className="w-full rounded-xl border border-[#e7e7f0] bg-[#fafafa] px-4 py-3 text-sm text-[#0a0a0a] placeholder:text-[#c0c0c0] outline-none focus:border-purple-400 focus:bg-white"
-                  />
-                  <input type="text" value={newCampaignDesc}
-                    onChange={(e) => setNewCampaignDesc(e.target.value)}
-                    placeholder="Short description (optional)"
-                    className="w-full rounded-xl border border-[#e7e7f0] bg-[#fafafa] px-4 py-3 text-sm text-[#0a0a0a] placeholder:text-[#c0c0c0] outline-none focus:border-purple-400 focus:bg-white"
-                  />
-                  <button type="button" onClick={createCampaign} disabled={!newCampaignName.trim()}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-40">
-                    <Plus className="size-4" strokeWidth={2} />
-                    Create campaign
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Single scrollable column — all sections stacked */
-            <div className="flex-1 overflow-y-auto">
-              <div className="mx-auto max-w-[680px] px-8 py-8 flex flex-col gap-12">
+          {/* Single scrollable column — always visible */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="mx-auto max-w-[680px] px-8 py-8 flex flex-col gap-12">
 
                 {/* ①  Lead Source ─────────────────────────────────────── */}
                 <div>
@@ -693,21 +663,68 @@ export default function SalesConfigPage({
                           </button>
                         </div>
                       ))}
-                      {/* Add campaign */}
-                      <div className="rounded-xl border border-dashed border-[#d4d4d4] bg-white p-4 flex flex-col gap-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">Add campaign</p>
-                        <div className="flex gap-2">
-                          <input type="text" value={newCampaignName}
+                      {/* Add / create campaign */}
+                      {!hasCampaigns ? (
+                        /* First-time creation — always visible, prominent */
+                        <div className="rounded-xl border border-purple-200 bg-purple-50/40 p-4 flex flex-col gap-3">
+                          <div>
+                            <p className="text-[13px] font-semibold text-[#0a0a0a]">Create your first campaign</p>
+                            <p className="mt-0.5 text-[12px] text-[#737373] leading-[1.5]">
+                              Campaigns are your different sales use cases — e.g. Fresh Lead, Renewal, Winback. Per-campaign sections below unlock once you have at least one.
+                            </p>
+                          </div>
+                          <input type="text" autoFocus value={newCampaignName}
                             onChange={(e) => setNewCampaignName(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Enter") createCampaign(); }}
-                            placeholder="e.g. Cross-sell, Winback…"
-                            className="flex-1 rounded-lg border border-[#e7e7f0] bg-[#fafafa] px-3 py-2 text-sm placeholder:text-[#c0c0c0] outline-none focus:border-purple-400" />
+                            placeholder="Campaign name — e.g. Fresh Lead, Renewal…"
+                            className="rounded-lg border border-[#e7e7f0] bg-white px-3 py-2 text-sm placeholder:text-[#c0c0c0] outline-none focus:border-purple-400" />
+                          <input type="text" value={newCampaignDesc}
+                            onChange={(e) => setNewCampaignDesc(e.target.value)}
+                            placeholder="Short description (optional)"
+                            className="rounded-lg border border-[#e7e7f0] bg-white px-3 py-2 text-sm placeholder:text-[#c0c0c0] outline-none focus:border-purple-400" />
                           <button type="button" onClick={createCampaign} disabled={!newCampaignName.trim()}
-                            className="flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-40">
-                            <Plus className="size-3.5" strokeWidth={2} /> Add
+                            className="flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-40">
+                            <Plus className="size-3.5" strokeWidth={2} /> Create campaign
                           </button>
                         </div>
-                      </div>
+                      ) : showAddCampaignForm ? (
+                        /* Inline form to add another */
+                        <div className="rounded-xl border border-dashed border-purple-300 bg-purple-50/30 p-4 flex flex-col gap-3">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#737373]">New campaign</p>
+                            <button type="button" onClick={() => { setShowAddCampaignForm(false); setNewCampaignName(""); setNewCampaignDesc(""); }}
+                              className="flex size-6 items-center justify-center rounded text-[#c0c0c0] hover:text-[#737373]">
+                              <X className="size-3.5" strokeWidth={2} />
+                            </button>
+                          </div>
+                          <input type="text" autoFocus value={newCampaignName}
+                            onChange={(e) => setNewCampaignName(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") createCampaign(); }}
+                            placeholder="e.g. Cross-sell, Winback, Renewal…"
+                            className="rounded-lg border border-[#e7e7f0] bg-white px-3 py-2 text-sm placeholder:text-[#c0c0c0] outline-none focus:border-purple-400" />
+                          <input type="text" value={newCampaignDesc}
+                            onChange={(e) => setNewCampaignDesc(e.target.value)}
+                            placeholder="Short description (optional)"
+                            className="rounded-lg border border-[#e7e7f0] bg-white px-3 py-2 text-sm placeholder:text-[#c0c0c0] outline-none focus:border-purple-400" />
+                          <div className="flex gap-2">
+                            <button type="button" onClick={createCampaign} disabled={!newCampaignName.trim()}
+                              className="flex items-center gap-1.5 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-40">
+                              <Plus className="size-3.5" strokeWidth={2} /> Add campaign
+                            </button>
+                            <button type="button" onClick={() => { setShowAddCampaignForm(false); setNewCampaignName(""); setNewCampaignDesc(""); }}
+                              className="rounded-lg border border-[#e5e5e5] bg-white px-4 py-2 text-sm font-medium text-[#737373] hover:bg-[#f5f5f5]">
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Collapsed — button to add another */
+                        <button type="button" onClick={() => setShowAddCampaignForm(true)}
+                          className="flex items-center gap-2 rounded-lg border border-dashed border-[#d4d4d4] bg-white px-4 py-3 text-sm font-medium text-[#737373] hover:border-purple-400 hover:bg-purple-50 hover:text-purple-600">
+                          <Plus className="size-4 shrink-0" strokeWidth={1.75} />
+                          Add another campaign
+                        </button>
+                      )}
                     </div>
                 </div>
 
@@ -718,7 +735,9 @@ export default function SalesConfigPage({
                       subtitle={`The modal shown to the agent before they accept the call — giving them key info about the customer.${selectedCampaign ? ` Configured for: ${selectedCampaign.name}` : " Select a campaign above."}`}
                     />
                     {!selectedCampaignId ? (
-                      <p className="text-sm text-[#737373]">Select a campaign from the bar above to configure its opening context.</p>
+                      <div className="rounded-lg border border-dashed border-[#e7e7f0] bg-[#fafafa] px-5 py-6 text-center">
+                        <p className="text-[13px] text-[#a0a0a0]">Add a campaign above to configure its opening call context.</p>
+                      </div>
                     ) : (
                       <div className="flex flex-col gap-4">
                         {/* API config */}
@@ -893,7 +912,9 @@ export default function SalesConfigPage({
                       subtitle={`Scripts and actions${selectedCampaign ? ` for: ${selectedCampaign.name}` : " — select a campaign above to configure each one separately."}`}
                     />
                     {!selectedCampaignId ? (
-                      <p className="text-sm text-[#737373]">Select a campaign above to configure its AI scripts.</p>
+                      <div className="rounded-lg border border-dashed border-[#e7e7f0] bg-[#fafafa] px-5 py-6 text-center">
+                        <p className="text-[13px] text-[#a0a0a0]">Add a campaign above to configure its AI scripts and CTAs.</p>
+                      </div>
                     ) : (
                       <div className="flex flex-col gap-4">
                         <FieldWrap label="Opening script">
@@ -1119,7 +1140,6 @@ export default function SalesConfigPage({
 
               </div>
             </div>
-          )}
         </div>
 
         {/* ── AI Copilot chat ──────────────────────────────────────────────── */}
